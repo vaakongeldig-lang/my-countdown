@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samen</title>
+    <!-- Supabase CDN & Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --accent-gold: #d4af37;
+            --accent-soft: #e8a7a1;
+            --text-main: #2d3142;
+            --text-muted: #9095a7;
+            --dot-empty: #e9ecef;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 3rem 1.5rem 2rem 1.5rem;
+            overflow-x: hidden;
+            position: relative;
+            gap: 2rem;
+        }
+
+        /* VASTE ADMIN ZONE LINKSBOVEN */
+        .secret-admin-trigger {
+            position: fixed;
+            top: 0; left: 0;
+            width: 120px; height: 120px;
+            background: rgba(0, 0, 0, 0); 
+            border: none; outline: none;
+            cursor: default; z-index: 9999; 
+        }
+
+        /* LAAG 1: Main Counter */
+        .main-display {
+            text-align: center;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .countdown-row {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .time-group { text-align: center; }
+        .time-group .number {
+            font-size: 4.5rem; font-weight: 200; line-height: 1;
+            color: var(--text-main); display: block; letter-spacing: -1px;
+        }
+        .time-group .label {
+            font-size: 0.75rem; text-transform: uppercase;
+            letter-spacing: 2px; color: var(--text-muted);
+            margin-top: 0.5rem; display: block;
+        }
+        .total-hours-badge {
+            display: inline-block; background: var(--card-bg);
+            padding: 0.6rem 1.2rem; border-radius: 50px;
+            font-size: 0.85rem; color: var(--text-main); font-weight: 500;
+            letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+        .total-hours-badge span { color: var(--accent-soft); font-weight: 700; }
+
+        .msg-completed {
+            font-size: 1.4rem; color: var(--accent-gold);
+            text-align: center; font-weight: 400;
+            display: none; margin: 1.5rem 0;
+        }
+
+        /* LAAG 2: Couple Section */
+        .couple-header {
+            text-align: center;
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .couple-avatars {
+            display: flex; align-items: center; justify-content: center;
+            gap: 2.5rem;
+            position: relative; width: 100%; height: 90px;
+        }
+        .top-avatar-container { position: relative; }
+        .top-avatar {
+            width: 75px; height: 75px; border-radius: 50%;
+            object-fit: cover; border: 3px solid #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+        .beating-heart {
+            font-size: 28px; color: var(--accent-soft);
+            animation: heartbeat 1s infinite ease-in-out;
+            cursor: pointer; user-select: none;
+        }
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.25); }
+            28% { transform: scale(1.05); }
+            42% { transform: scale(1.3); }
+            70% { transform: scale(1); }
+        }
+
+        /* Speech Bubbles */
+        .speech-bubble {
+            position: absolute; bottom: 95px;
+            background: var(--text-main); color: #fff;
+            padding: 0.6rem 1rem; border-radius: 16px;
+            font-size: 0.85rem; font-weight: 500;
+            white-space: nowrap; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; z-index: 30;
+        }
+        .speech-bubble::after {
+            content: ''; position: absolute; top: 100%; left: 50%;
+            transform: translateX(-50%); border-width: 6px; border-style: solid;
+            border-color: var(--text-main) transparent transparent transparent;
+        }
+        #bubble-left { left: 10px; transform: translateY(10px); }
+        #bubble-right { right: 10px; transform: translateY(10px); }
+        .speech-bubble.show { opacity: 1; transform: translateY(0) !important; }
+
+        /* LAAG 3: BOLLETJES TIJDSLIJN CONTAINER */
+        .timeline-container {
+            width: 100%; max-width: 450px;
+            background: var(--card-bg); padding: 2.2rem 1.5rem;
+            border-radius: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0,0,0,0.01);
+        }
+        .dots-grid {
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 14px 12px;
+            justify-content: center; 
+            margin-bottom: 1.5rem;
+        }
+
+        /* Container voor bolletje + nummertje */
+        .dot-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Basis stijl voor de bollen */
+        .day-dot {
+            width: 26px; height: 26px; border-radius: 50%;
+            background-color: var(--dot-empty); border: 2px solid transparent;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer; user-select: none;
+        }
+        .day-dot:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .day-dot:active { transform: scale(0.95); }
+
+        /* Dag passeert -> Goud */
+        .day-dot.passed {
+            background-color: var(--accent-gold);
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+        }
+        .day-dot.passed:hover {
+            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.6);
+        }
+
+        /* Dag is VANDAAG -> Fonkelen */
+        .day-dot.today {
+            background-color: var(--accent-soft);
+            animation: dot-sparkle 2s infinite ease-in-out;
+            box-shadow: 0 0 12px var(--accent-soft);
+            z-index: 2;
+        }
+        @keyframes dot-sparkle {
+            0% { transform: scale(1); box-shadow: 0 0 6px var(--accent-soft); }
+            50% { transform: scale(1.25); box-shadow: 0 0 16px var(--accent-soft); }
+            100% { transform: scale(1); box-shadow: 0 0 6px var(--accent-soft); }
+        }
+
+        /* Nummering onder de bolletjes */
+        .dot-number {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            user-select: none;
+        }
+
+        .timeline-labels {
+            display: flex; justify-content: space-between;
+            font-size: 0.75rem; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-top: 0.5rem; padding: 0 4px;
+        }
+
+        /* LAAG 4: Micro-Dagboek Display Box */
+        .day-note-display {
+            width: 100%; max-width: 450px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px dashed rgba(0,0,0,0.08);
+            padding: 1.2rem; border-radius: 20px;
+            font-size: 0.88rem;
+            text-align: center; color: var(--text-main);
+            transition: all 0.3s ease; opacity: 0; transform: translateY(5px);
+            margin-bottom: 2rem;
+        }
+        .day-note-display.show { opacity: 1; transform: translateY(0); }
+        .day-note-display .note-date { font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px; font-size: 0.75rem; text-transform: uppercase; }
+
+        /* Light Minimal Admin Modal */
+        .modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(248, 249, 250, 0.98);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease; z-index: 10000; padding: 1.5rem;
+        }
+        .modal.open { opacity: 1; pointer-events: auto; }
+        .modal-content {
+            background: var(--card-bg); width: 100%; max-width: 420px;
+            padding: 2.2rem 2rem; border-radius: 32px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0,0,0,0.02); max-height: 90vh; overflow-y: auto;
+        }
+        .modal-content h2 { font-size: 1.2rem; font-weight: 500; margin-bottom: 1.2rem; color: var(--text-main); }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.8rem; background: var(--bg-color); border: 1px solid rgba(0, 0, 0, 0.05); border-radius: 14px; color: var(--text-main); font-size: 0.95rem; }
+        .form-group textarea { resize: vertical; min-height: 60px; }
+         
+        .admin-actions { display: flex; gap: 0.75rem; margin-top: 1.2rem; }
+        .btn-action { width: 100%; padding: 0.9rem; border: none; border-radius: 14px; font-weight: 600; cursor: pointer; }
+        .btn-save { background: var(--text-main); color: #fff; }
+        .btn-cancel { background: #e9ecef; color: var(--text-main); }
+    </style>
+</head>
+<body>
+
+    <button class="secret-admin-trigger" id="secretAdminBtn"></button>
+
+    <!-- LAAG 1: DE COUNTDOWN TIMERS -->
+    <div class="main-display">
+        <div class="countdown-row" id="timerContainer">
+            <div class="time-group">
+                <span class="number" id="days">00</span>
+                <span class="label">Dagen</span>
+            </div>
+            <div class="time-group">
+                <span class="number" id="hours">00</span>
+                <span class="label">Uren</span>
+            </div>
+            <div class="time-group">
+                <span class="number" id="minutes">00</span>
+                <span class="label">Minuten</span>
+            </div>
+        </div>
+         
+        <div class="total-hours-badge" id="totalHoursContainer">
+            Nog <span id="totalHours">0</span> uur
+        </div>
+    </div>
+
+    <div class="msg-completed" id="completedMessage">Eindelijk weer samen. ❤️</div>
+
+    <!-- LAAG 2: ONZE AVATARS -->
+    <div class="couple-header">
+        <div class="speech-bubble" id="bubble-left"></div>
+        <div class="speech-bubble" id="bubble-right"></div>
+         
+        <div class="couple-avatars">
+            <div class="top-avatar-container">
+                <img src="m.jpg" alt="Haar" class="top-avatar" id="top-avatar-left">
+            </div>
+            <div class="beating-heart">❤</div>
+            <div class="top-avatar-container">
+                <img src="k.jpg" alt="Mij" class="top-avatar" id="top-avatar-right">
+            </div>
+        </div>
+    </div>
+
+    <!-- LAAG 3: DE TIJDSLIJN BOLLETJES -->
+    <div class="timeline-container">
+        <div class="dots-grid" id="dotsGrid"></div>
+        <div class="timeline-labels">
+            <span id="labelStart">-- ---</span>
+            <span id="labelEnd">-- ---</span>
+        </div>
+    </div>
+
+    <!-- LAAG 4: DE MICRO DAGBOEK -->
+    <div class="day-note-display" id="dayNoteDisplay">
+        <span class="note-date" id="noteDateTitle">Klik op een dag...</span>
+        <span id="noteTextContent">Bekijk wat er die dag gebeurd is!</span>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="modal" id="adminModal">
+        <div class="modal-content">
+            <h2>Instellingen & Dagboek</h2>
+            <div class="form-group">
+                <label for="inputStart">Vertrekdatum</label>
+                <input type="datetime-local" id="inputStart">
+            </div>
+            <div class="form-group">
+                <label for="inputEnd">Terugkomstdatum</label>
+                <input type="datetime-local" id="inputEnd">
+            </div>
+            <div class="form-group">
+                <label for="inputQuotesHer">Haar Quotes</label>
+                <textarea id="inputQuotesHer"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="inputQuotesHim">Mijn Quotes</label>
+                <textarea id="inputQuotesHim"></textarea>
+            </div>
+             
+            <hr style="border: 0; border-top: 1px solid rgba(0,0,0,0.08); margin: 1rem 0;">
+             
+            <div class="form-group">
+                <label for="selectNoteDay">Kies Dag voor Notitie</label>
+                <select id="selectNoteDay"><option value="">-- Eerst datums laden --</option></select>
+            </div>
+            <div class="form-group">
+                <label for="inputDayNote">Korte Notitie/Herinnering voor deze dag</label>
+                <textarea id="inputDayNote" placeholder="Bijvoorbeeld: Vandaag FaceTime date gehad! 🍕"></textarea>
+            </div>
+
+            <div class="admin-actions">
+                <button class="btn-action btn-cancel" id="closeAdmin">Annuleren</button>
+                <button class="btn-action btn-save" id="saveAdmin">Opslaan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === 1. INITIALISATIE ===
+        const SUPABASE_URL = "https://ychmiiyefzmcsikmxnyy.supabase.co"; 
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljaG1paXllZnptY3Npa214bnl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzNjIyNTQsImV4cCI6MjA5OTkzODI1NH0.nMZHGGv7MOFzIvhXKChcQMG5nbT50odoz6x7Z4XT3e0";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let startDateStr = "2026-07-16T09:00";
+        let endDateStr = "2026-08-30T18:00";
+        let quotesLeft = [];
+        let quotesRight = [];
+        let dailyNotes = {}; 
+        
+        // Veilige lokale datumberekening
+        function getLocalDateString(dateObj = new Date()) {
+            const offset = dateObj.getTimezoneOffset();
+            const localDate = new Date(dateObj.getTime() - (offset * 60 * 1000));
+            return localDate.toISOString().split('T')[0];
+        }
+
+        let lastCheckedDayStr = getLocalDateString();
+
+        function setStatus(status, text) {
+            console.log(`[Supabase Status]: ${status} - ${text}`);
+        }
+
+        function triggerConfetti() {
+            confetti({
+                particleCount: 140,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#d4af37', '#e8a7a1', '#ffffff', '#f4d068']
+            });
+        }
+
+        // === 2. DATA LAAD LOGICA ===
+        async function loadSharedDates() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('countdown_settings')
+                    .select('*')
+                    .single();
+
+                if (error) throw error;
+
+                if (data) {
+                    startDateStr = data.start_date;
+                    endDateStr = data.end_date;
+                    dailyNotes = data.daily_notes || {}; 
+                     
+                    document.getElementById('inputStart').value = startDateStr;
+                    document.getElementById('inputEnd').value = endDateStr;
+                     
+                    if(data.quotes_her) {
+                        quotesLeft = data.quotes_her.split(',').map(s => s.trim());
+                        document.getElementById('inputQuotesHer').value = data.quotes_her;
+                    }
+                    if(data.quotes_him) {
+                        quotesRight = data.quotes_him.split(',').map(s => s.trim());
+                        document.getElementById('inputQuotesHim').value = data.quotes_him;
+                    }
+
+                    setupDotsGrid();
+                    populateDaySelector();
+                     
+                    const originalStates = getDotsState();
+                    updateCountdown();
+                    const newStates = getDotsState();
+                    if(newStates.passedCount > originalStates.passedCount && originalStates.passedCount > 0) {
+                        setTimeout(triggerConfetti, 1000); 
+                    }
+
+                    autoSelectToday();
+                    setStatus('online', 'Supabase Live');
+                }
+            } catch (err) {
+                console.error("Database verbinding mislukt:", err);
+                setStatus('offline', 'Offline (Fallback)');
+                setupDotsGrid();
+                updateCountdown();
+                autoSelectToday();
+            }
+        }
+
+        function getDotsState() {
+            const passed = document.querySelectorAll('.day-dot.passed').length;
+            return { passedCount: passed };
+        }
+
+        supabaseClient
+            .channel('public:countdown_settings')
+            .on('postgres_changes', { event: 'UPDATE', table: 'countdown_settings' }, payload => {
+                startDateStr = payload.new.start_date;
+                endDateStr = payload.new.end_date;
+                dailyNotes = payload.new.daily_notes || {};
+                if(payload.new.quotes_her) quotesLeft = payload.new.quotes_her.split(',').map(s => s.trim());
+                if(payload.new.quotes_him) quotesRight = payload.new.quotes_him.split(',').map(s => s.trim());
+                 
+                setupDotsGrid();
+                populateDaySelector();
+                updateCountdown();
+                autoSelectToday();
+            })
+            .subscribe();
+
+        // === 3. CITATEN MECHANISME ===
+        function triggerSpontaneousQuote() {
+            const isLeft = Math.random() > 0.5;
+            const bubble = document.getElementById(isLeft ? 'bubble-left' : 'bubble-right');
+            const avatar = document.getElementById(isLeft ? 'top-avatar-left' : 'top-avatar-right');
+            const quotes = isLeft ? quotesLeft : quotesRight;
+            if(!bubble || !avatar || !quotes || quotes.length === 0) {
+                setTimeout(triggerSpontaneousQuote, 5000);
+                return;
+            }
+             
+            bubble.innerText = quotes[Math.floor(Math.random() * quotes.length)];
+            bubble.classList.add('show');
+            avatar.style.transform = "scale(1.1) rotate(" + (isLeft ? "-5deg" : "5deg") + ")";
+            setTimeout(() => {
+                bubble.classList.remove('show');
+                avatar.style.transform = "scale(1) rotate(0deg)";
+            }, 4000);
+            setTimeout(triggerSpontaneousQuote, Math.random() * 13000 + 12000);
+        }
+        setTimeout(triggerSpontaneousQuote, 5000);
+
+        // === 4. DYNAMISCH GRID GENERATIE ===
+        function setupDotsGrid() {
+            const start = new Date(startDateStr); start.setHours(0,0,0,0);
+            const end = new Date(endDateStr); end.setHours(0,0,0,0);
+             
+            const diffTime = Math.abs(end - start);
+            const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
+             
+            const gridContainer = document.getElementById('dotsGrid');
+            if(!gridContainer) return;
+            gridContainer.innerHTML = '';
+
+            for (let i = 0; i < totalDays; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'dot-wrapper';
+
+                const dot = document.createElement('div');
+                dot.className = 'day-dot';
+                 
+                const dotDate = new Date(start);
+                dotDate.setDate(start.getDate() + i);
+                const dateIsoStr = getLocalDateString(dotDate);
+                dot.setAttribute('data-date', dateIsoStr);
+                dot.setAttribute('data-readable', formatDateLabel(dotDate));
+                dot.setAttribute('data-index', i + 1);
+
+                dot.addEventListener('click', () => {
+                    showMicroDiary(dateIsoStr, dot.getAttribute('data-readable'), i + 1);
+                     
+                    if (dot.classList.contains('passed') || dot.classList.contains('today')) {
+                        triggerConfetti();
+                    }
+                });
+                 
+                const numLabel = document.createElement('span');
+                numLabel.className = 'dot-number';
+                numLabel.innerText = i + 1;
+
+                wrapper.appendChild(dot);
+                wrapper.appendChild(numLabel);
+                gridContainer.appendChild(wrapper);
+            }
+            document.getElementById('labelStart').innerText = formatDateLabel(startDateStr);
+            document.getElementById('labelEnd').innerText = formatDateLabel(endDateStr);
+        }
+
+        function formatDateLabel(dateInput) {
+            const d = new Date(dateInput);
+            const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+            return d.getDate() + ' ' + months[d.getMonth()];
+        }
+
+        function showMicroDiary(dateIso, readableDate, dayNumber) {
+            const displayBox = document.getElementById('dayNoteDisplay');
+            const titleNode = document.getElementById('noteDateTitle');
+            const contentNode = document.getElementById('noteTextContent');
+             
+            const todayStr = getLocalDateString();
+            let statusSuffix = "";
+            if(dateIso < todayStr) statusSuffix = " (Voltooid ✨)";
+            else if(dateIso === todayStr) statusSuffix = " (Vandaag ⏱️)";
+             
+            titleNode.innerText = "Dag " + dayNumber + " - " + readableDate + statusSuffix;
+
+            if(dailyNotes[dateIso]) {
+                contentNode.innerText = dailyNotes[dateIso];
+            } else {
+                contentNode.innerText = "Nog geen speciale herinnering opgeschreven voor deze dag. ❤️";
+            }
+             
+            displayBox.classList.add('show');
+        }
+
+        function autoSelectToday() {
+            const todayStr = getLocalDateString();
+            const todayDot = document.querySelector(`.day-dot[data-date="${todayStr}"]`);
+            if (todayDot) {
+                showMicroDiary(todayStr, todayDot.getAttribute('data-readable'), todayDot.getAttribute('data-index'));
+            } else {
+                const firstDot = document.querySelector('.day-dot');
+                if (firstDot) {
+                    showMicroDiary(firstDot.getAttribute('data-date'), firstDot.getAttribute('data-readable'), 1);
+                }
+            }
+        }
+
+        function populateDaySelector() {
+            const select = document.getElementById('selectNoteDay');
+            if(!select) return;
+            select.innerHTML = '<option value="">-- Kies een dag --</option>';
+             
+            const start = new Date(startDateStr); start.setHours(0,0,0,0);
+            const end = new Date(endDateStr); end.setHours(0,0,0,0);
+            const diffTime = Math.abs(end - start);
+            const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+            for(let i=0; i<totalDays; i++) {
+                const d = new Date(start);
+                d.setDate(start.getDate() + i);
+                const iso = getLocalDateString(d);
+                const opt = document.createElement('option');
+                opt.value = iso;
+                opt.innerText = "Dag " + (i + 1) + " (" + formatDateLabel(d) + ")";
+                select.appendChild(opt);
+            }
+        }
+
+        document.getElementById('selectNoteDay').addEventListener('change', (e) => {
+            const chosenIso = e.target.value;
+            document.getElementById('inputDayNote').value = dailyNotes[chosenIso] || "";
+        });
+
+        // === 5. LIVE COUNTDOWN & LIVE SWAP CHECK ===
+        function updateCountdown() {
+            const now = new Date();
+            const timeRemaining = new Date(endDateStr).getTime() - now.getTime();
+            const todayStr = getLocalDateString(now);
+
+            if (todayStr !== lastCheckedDayStr) {
+                lastCheckedDayStr = todayStr;
+                triggerConfetti(); 
+                autoSelectToday();
+            }
+
+            const dots = document.querySelectorAll('.day-dot');
+            dots.forEach(dot => {
+                const dotDateStr = dot.getAttribute('data-date');
+                dot.classList.remove('passed', 'today');
+
+                if (dotDateStr < todayStr) {
+                    dot.classList.add('passed');
+                } else if (dotDateStr === todayStr) {
+                    dot.classList.add('today');
+                }
+            });
+
+            if (timeRemaining <= 0) {
+                document.getElementById('timerContainer').style.display = 'none';
+                document.getElementById('totalHoursContainer').style.display = 'none';
+                document.getElementById('completedMessage').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('timerContainer').style.display = 'flex';
+            document.getElementById('totalHoursContainer').style.display = 'inline-block';
+            document.getElementById('completedMessage').style.display = 'none';
+
+            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+
+            document.getElementById('days').innerText = days < 10 ? "0" + days : days;
+            document.getElementById('hours').innerText = hours < 10 ? "0" + hours : hours;
+            document.getElementById('minutes').innerText = minutes < 10 ? "0" + minutes : minutes;
+            document.getElementById('totalHours').innerText = Math.floor(timeRemaining / (1000 * 60 * 60));
+        }
+
+        // === 6. ADMIN EVENT HANDLERS ===
+        const modal = document.getElementById('adminModal');
+        let clickCount = 0; let clickTimer;
+         
+        document.getElementById('secretAdminBtn').addEventListener('click', () => {
+            clickCount++;
+            clearTimeout(clickTimer);
+            if (clickCount === 3) {
+                modal.classList.add('open');
+                clickCount = 0;
+            }
+            clickTimer = setTimeout(() => { clickCount = 0; }, 1500); 
+        });
+         
+        document.getElementById('closeAdmin').addEventListener('click', () => modal.classList.remove('open'));
+
+        document.getElementById('saveAdmin').addEventListener('click', async () => {
+            setStatus('connecting', 'Bijwerken...');
+            const startVal = document.getElementById('inputStart').value;
+            const endVal = document.getElementById('inputEnd').value;
+            const qHerVal = document.getElementById('inputQuotesHer').value;
+            const qHimVal = document.getElementById('inputQuotesHim').value;
+             
+            const selectedDayIso = document.getElementById('selectNoteDay').value;
+            const noteText = document.getElementById('inputDayNote').value;
+            if(selectedDayIso) {
+                if(noteText.trim() === "") {
+                    delete dailyNotes[selectedDayIso];
+                } else {
+                    dailyNotes[selectedDayIso] = noteText;
+                }
+            }
+
+            const { error } = await supabaseClient
+                .from('countdown_settings')
+                .update({ 
+                    start_date: startVal, 
+                    end_date: endVal,
+                    quotes_her: qHerVal,
+                    quotes_him: qHimVal,
+                    daily_notes: dailyNotes
+                })
+                .eq('id', 1);
+
+            if (!error) {
+                modal.classList.remove('open');
+                setStatus('online', 'Opgeslagen!');
+                document.getElementById('selectNoteDay').value = "";
+                document.getElementById('inputDayNote').value = "";
+            } else {
+                alert("Fout bij opslaan: " + error.message);
+                setStatus('offline', 'Fout bij opslaan');
+            }
+        });
+
+        loadSharedDates();
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
