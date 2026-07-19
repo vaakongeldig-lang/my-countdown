@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Countdown ❤️ Samen Weer</title>
+    <title>Countdown</title>
     <!-- Supabase CDN & Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -50,12 +50,22 @@
             cursor: default; z-index: 9999; 
         }
 
-        /* LAAG 1: Main Counter */
+        /* LAAG 1: Main Counter (KLIKBAAR GEMAAKT) */
         .main-display {
             text-align: center;
             width: 100%;
             margin-top: 1rem;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s ease, opacity 0.2s ease;
         }
+        .main-display:hover {
+            transform: scale(1.02);
+        }
+        .main-display:active {
+            transform: scale(0.98);
+        }
+
         .countdown-row {
             display: flex;
             justify-content: center;
@@ -81,6 +91,25 @@
             border: 1px solid rgba(0,0,0,0.02);
         }
         .total-hours-badge span { color: var(--accent-soft); font-weight: 700; }
+
+        /* Stijl voor de alternatieve statistieken */
+        .alternative-stats-display {
+            font-size: 1.4rem;
+            font-weight: 300;
+            line-height: 1.4;
+            color: var(--text-main);
+            padding: 1.5rem 2rem;
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            display: inline-block;
+            max-width: 420px;
+            border: 1px solid rgba(0,0,0,0.01);
+        }
+        .alternative-stats-display strong {
+            color: var(--accent-soft);
+            font-weight: 700;
+        }
 
         .msg-completed {
             font-size: 1.4rem; color: var(--accent-gold);
@@ -109,9 +138,8 @@
             object-fit: cover; border: 3px solid #fff;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             transition: transform 0.3s ease;
-            cursor: pointer; /* Wijziging: Cursor wordt een handje */
+            cursor: pointer;
         }
-        /* Wijziging: Visuele feedback bij hover over avatar */
         .top-avatar:hover {
             transform: scale(1.05);
             box-shadow: 0 6px 20px rgba(0,0,0,0.12);
@@ -267,24 +295,34 @@
     <button class="secret-admin-trigger" id="secretAdminBtn"></button>
 
     <!-- LAAG 1: DE COUNTDOWN TIMERS -->
-    <div class="main-display">
-        <div class="countdown-row" id="timerContainer">
-            <div class="time-group">
-                <span class="number" id="days">00</span>
-                <span class="label">Dagen</span>
+    <div class="main-display" id="clickableCounter" title="Klik voor leuke feitjes!">
+        <!-- Normale weergave -->
+        <div id="normalCounterView">
+            <div class="countdown-row" id="timerContainer">
+                <div class="time-group">
+                    <span class="number" id="days">00</span>
+                    <span class="label">Dagen</span>
+                </div>
+                <div class="time-group">
+                    <span class="number" id="hours">00</span>
+                    <span class="label">Uren</span>
+                </div>
+                <div class="time-group">
+                    <span class="number" id="minutes">00</span>
+                    <span class="label">Minuten</span>
+                </div>
             </div>
-            <div class="time-group">
-                <span class="number" id="hours">00</span>
-                <span class="label">Uren</span>
-            </div>
-            <div class="time-group">
-                <span class="number" id="minutes">00</span>
-                <span class="label">Minuten</span>
+             
+            <div class="total-hours-badge" id="totalHoursContainer">
+                Nog <span id="totalHours">0</span> uur
             </div>
         </div>
-         
-        <div class="total-hours-badge" id="totalHoursContainer">
-            Nog <span id="totalHours">0</span> uur
+
+        <!-- Alternatieve feitjes-weergave -->
+        <div id="alternativeCounterView" style="display: none;">
+            <div class="alternative-stats-display" id="alternativeStatsContent">
+                Laden... 🤔
+            </div>
         </div>
     </div>
 
@@ -297,12 +335,10 @@
          
         <div class="couple-avatars">
             <div class="top-avatar-container">
-                <!-- Wijziging: ID's toegevoegd aan img voor makkelijker selecteren -->
                 <img src="m.jpg" alt="Haar" class="top-avatar" id="avatar-left">
             </div>
             <div class="beating-heart">❤</div>
             <div class="top-avatar-container">
-                <!-- Wijziging: ID's toegevoegd aan img voor makkelijker selecteren -->
                 <img src="k.jpg" alt="Mij" class="top-avatar" id="avatar-right">
             </div>
         </div>
@@ -319,7 +355,7 @@
 
     <!-- LAAG 4: DE MICRO DAGBOEK -->
     <div class="day-note-display" id="dayNoteDisplay">
-        <span class="note-date" id="noteDateTitle">Klik op een dag...</span>
+        <span class="note-date" id="noteDateTitle">Klik op een day...</span>
         <span id="noteTextContent">Bekijk wat er die dag gebeurd is!</span>
     </div>
 
@@ -336,11 +372,11 @@
                 <input type="datetime-local" id="inputEnd">
             </div>
             <div class="form-group">
-                <label for="inputQuotesHer">Haar Quotes (gebruik | als scheiding)</label>
+                <label for="inputQuotesHer">Haar Quotes</label>
                 <textarea id="inputQuotesHer"></textarea>
             </div>
             <div class="form-group">
-                <label for="inputQuotesHim">Mijn Quotes (gebruik | als scheiding)</label>
+                <label for="inputQuotesHim">Mijn Quotes</label>
                 <textarea id="inputQuotesHim"></textarea>
             </div>
              
@@ -381,9 +417,8 @@
             return localDate.toISOString().split('T')[0];
         }
 
-        // HIER AANGEPAST: lastCheckedDayStr op null initialiseren voorkomt dubbele confetti bij laden
         let lastCheckedDayStr = null; 
-        let spontaneousQuoteTimer = null; // Timer referentie opslaan
+        let spontaneousQuoteTimer = null;
 
         function setStatus(status, text) {
             console.log(`[Supabase Status]: ${status} - ${text}`);
@@ -447,7 +482,6 @@
                 endDateStr = payload.new.end_date;
                 dailyNotes = payload.new.daily_notes || {};
                 
-                // HIER GEFIXT: Gebruikt nu ook '|' in plaats van ','
                 if(payload.new.quotes_her) {
                     quotesLeft = payload.new.quotes_her.split('|').map(s => s.trim()).filter(s => s.length > 0);
                 }
@@ -462,9 +496,7 @@
             })
             .subscribe();
 
-        // === 3. CITATEN MECHANISME (AANGEPAST) ===
-
-        // Basis functie om een quote te tonen (on-demand of spontaan)
+        // === 3. CITATEN MECHANISME ===
         function showQuote(isLeft) {
             const bubbleId = isLeft ? 'bubble-left' : 'bubble-right';
             const avatarId = isLeft ? 'avatar-left' : 'avatar-right';
@@ -475,38 +507,85 @@
 
             if(!bubble || !avatar || !quotes || quotes.length === 0) return;
 
-            // Spontane timer resetten als we handmatig klikken, anders verschijnt er direct nog een
             clearTimeout(spontaneousQuoteTimer);
 
             bubble.innerText = quotes[Math.floor(Math.random() * quotes.length)];
             bubble.classList.add('show');
             avatar.style.transform = "scale(1.1) rotate(" + (isLeft ? "-5deg" : "5deg") + ")";
 
-            // Verberg na 4 seconden
             setTimeout(() => {
                 bubble.classList.remove('show');
                 avatar.style.transform = "scale(1) rotate(0deg)";
-                // Start de spontane cyclus weer nadat de ballon verborgen is
                 startSpontaneousQuoteCycle(); 
             }, 4000);
         }
 
-        // De oorspronkelijke spontane cyclus, nu als start-functie
         function startSpontaneousQuoteCycle() {
             clearTimeout(spontaneousQuoteTimer);
-            // Plan de volgende quote over 12 tot 25 seconden
             spontaneousQuoteTimer = setTimeout(() => {
                 const isLeft = Math.random() > 0.5;
                 showQuote(isLeft);
             }, Math.random() * 13000 + 12000);
         }
 
-        // Event listeners voor klikken op avatars
         document.getElementById('avatar-left').addEventListener('click', () => showQuote(true));
         document.getElementById('avatar-right').addEventListener('click', () => showQuote(false));
 
-        // Start de spontane cyclus voor het eerst na 5 seconden
         setTimeout(startSpontaneousQuoteCycle, 5000);
+
+        // === 3B. COUNTER FEITJES LOGICA (NIEUW) ===
+        let showAlternativeStats = false;
+        let statsResetTimer = null;
+        let currentStatIndex = 0;
+
+        const clickableCounter = document.getElementById('clickableCounter');
+        const normalView = document.getElementById('normalCounterView');
+        const alternativeView = document.getElementById('alternativeCounterView');
+        const statsContent = document.getElementById('alternativeStatsContent');
+
+        clickableCounter.addEventListener('click', () => {
+            showAlternativeStats = !showAlternativeStats;
+            clearTimeout(statsResetTimer);
+
+            if (showAlternativeStats) {
+                const now = new Date();
+                const totalTime = new Date(endDateStr).getTime() - new Date(startDateStr).getTime();
+                const timeRemaining = new Date(endDateStr).getTime() - now.getTime();
+                const timePassed = totalTime - timeRemaining;
+
+                if (timeRemaining > 0) {
+                    const totalSeconds = Math.floor(timeRemaining / 1000);
+                    const totalMinutes = Math.floor(timeRemaining / (1000 * 60));
+                    const totalNights = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+                    const percentagePassed = Math.min(100, Math.max(0, (timePassed / totalTime) * 100)).toFixed(1);
+
+                    const statsOptions = [
+                        `Dat zijn nog precies <strong>${totalSeconds.toLocaleString('nl-NL')}</strong> seconden wachten! ⏱️`,
+                        //`Nog maar <strong>${totalNights}</strong> nachtjes slapen 😴`,
+                        `Al <strong>${percentagePassed}%</strong> van de totale tijd is al voorbij! 💪`,
+                        `Dat is nog maar <strong>${totalMinutes.toLocaleString('nl-NL')}</strong> minuutjes geduld hebben! 💋`
+                    ];
+
+                    statsContent.innerHTML = statsOptions[currentStatIndex];
+                    currentStatIndex = (currentStatIndex + 1) % statsOptions.length;
+                } else {
+                    statsContent.innerHTML = "Welkom terug schat! ❤️";
+                }
+
+                normalView.style.display = 'none';
+                alternativeView.style.display = 'block';
+
+                statsResetTimer = setTimeout(() => {
+                    showAlternativeStats = false;
+                    alternativeView.style.display = 'none';
+                    normalView.style.display = 'block';
+                }, 5000);
+
+            } else {
+                alternativeView.style.display = 'none';
+                normalView.style.display = 'block';
+            }
+        });
 
         // === 4. DYNAMISCH GRID GENERATIE ===
         function setupDotsGrid() {
@@ -626,7 +705,6 @@
             const timeRemaining = new Date(endDateStr).getTime() - now.getTime();
             const todayStr = getLocalDateString(now);
 
-            // HIER GEFIXT: Veiligere check voor dagwissel voorkomt dubbele confetti
             if (lastCheckedDayStr && todayStr !== lastCheckedDayStr) {
                 triggerConfetti(); 
                 autoSelectToday();
@@ -646,15 +724,15 @@
             });
 
             if (timeRemaining <= 0) {
-                document.getElementById('timerContainer').style.display = 'none';
-                document.getElementById('totalHoursContainer').style.display = 'none';
+                document.getElementById('clickableCounter').style.display = 'none';
                 document.getElementById('completedMessage').style.display = 'block';
                 return;
             }
 
-            document.getElementById('timerContainer').style.display = 'flex';
-            document.getElementById('totalHoursContainer').style.display = 'inline-block';
-            document.getElementById('completedMessage').style.display = 'none';
+            if (!showAlternativeStats) {
+                document.getElementById('clickableCounter').style.display = 'block';
+                document.getElementById('completedMessage').style.display = 'none';
+            }
 
             const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
             const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -721,7 +799,6 @@
             }
         });
 
-        // Start alles op
         loadSharedDates();
         setInterval(updateCountdown, 1000);
     </script>
