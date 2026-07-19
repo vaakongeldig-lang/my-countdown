@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Countdown</title>
+    <title>Countdown ❤️ Samen Weer</title>
     <!-- Supabase CDN & Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -109,6 +109,12 @@
             object-fit: cover; border: 3px solid #fff;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             transition: transform 0.3s ease;
+            cursor: pointer; /* Wijziging: Cursor wordt een handje */
+        }
+        /* Wijziging: Visuele feedback bij hover over avatar */
+        .top-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
         }
         .beating-heart {
             font-size: 28px; color: var(--accent-soft);
@@ -291,11 +297,13 @@
          
         <div class="couple-avatars">
             <div class="top-avatar-container">
-                <img src="m.jpg" alt="Haar" class="top-avatar" id="top-avatar-left">
+                <!-- Wijziging: ID's toegevoegd aan img voor makkelijker selecteren -->
+                <img src="m.jpg" alt="Haar" class="top-avatar" id="avatar-left">
             </div>
             <div class="beating-heart">❤</div>
             <div class="top-avatar-container">
-                <img src="k.jpg" alt="Mij" class="top-avatar" id="top-avatar-right">
+                <!-- Wijziging: ID's toegevoegd aan img voor makkelijker selecteren -->
+                <img src="k.jpg" alt="Mij" class="top-avatar" id="avatar-right">
             </div>
         </div>
     </div>
@@ -328,11 +336,11 @@
                 <input type="datetime-local" id="inputEnd">
             </div>
             <div class="form-group">
-                <label for="inputQuotesHer">Haar Quotes</label>
+                <label for="inputQuotesHer">Haar Quotes (gebruik | als scheiding)</label>
                 <textarea id="inputQuotesHer"></textarea>
             </div>
             <div class="form-group">
-                <label for="inputQuotesHim">Mijn Quotes</label>
+                <label for="inputQuotesHim">Mijn Quotes (gebruik | als scheiding)</label>
                 <textarea id="inputQuotesHim"></textarea>
             </div>
              
@@ -373,7 +381,9 @@
             return localDate.toISOString().split('T')[0];
         }
 
-        let lastCheckedDayStr = getLocalDateString();
+        // HIER AANGEPAST: lastCheckedDayStr op null initialiseren voorkomt dubbele confetti bij laden
+        let lastCheckedDayStr = null; 
+        let spontaneousQuoteTimer = null; // Timer referentie opslaan
 
         function setStatus(status, text) {
             console.log(`[Supabase Status]: ${status} - ${text}`);
@@ -417,14 +427,7 @@
 
                     setupDotsGrid();
                     populateDaySelector();
-                     
-                    const originalStates = getDotsState();
                     updateCountdown();
-                    const newStates = getDotsState();
-                    if(newStates.passedCount > originalStates.passedCount && originalStates.passedCount > 0) {
-                        setTimeout(triggerConfetti, 1000); 
-                    }
-
                     autoSelectToday();
                     setStatus('online', 'Supabase Live');
                 }
@@ -437,17 +440,14 @@
             }
         }
 
-        function getDotsState() {
-            const passed = document.querySelectorAll('.day-dot.passed').length;
-            return { passedCount: passed };
-        }
-
         supabaseClient
             .channel('public:countdown_settings')
             .on('postgres_changes', { event: 'UPDATE', table: 'countdown_settings' }, payload => {
                 startDateStr = payload.new.start_date;
                 endDateStr = payload.new.end_date;
                 dailyNotes = payload.new.daily_notes || {};
+                
+                // HIER GEFIXT: Gebruikt nu ook '|' in plaats van ','
                 if(payload.new.quotes_her) {
                     quotesLeft = payload.new.quotes_her.split('|').map(s => s.trim()).filter(s => s.length > 0);
                 }
@@ -462,27 +462,51 @@
             })
             .subscribe();
 
-        // === 3. CITATEN MECHANISME ===
-        function triggerSpontaneousQuote() {
-            const isLeft = Math.random() > 0.5;
-            const bubble = document.getElementById(isLeft ? 'bubble-left' : 'bubble-right');
-            const avatar = document.getElementById(isLeft ? 'top-avatar-left' : 'top-avatar-right');
+        // === 3. CITATEN MECHANISME (AANGEPAST) ===
+
+        // Basis functie om een quote te tonen (on-demand of spontaan)
+        function showQuote(isLeft) {
+            const bubbleId = isLeft ? 'bubble-left' : 'bubble-right';
+            const avatarId = isLeft ? 'avatar-left' : 'avatar-right';
+            
+            const bubble = document.getElementById(bubbleId);
+            const avatar = document.getElementById(avatarId);
             const quotes = isLeft ? quotesLeft : quotesRight;
-            if(!bubble || !avatar || !quotes || quotes.length === 0) {
-                setTimeout(triggerSpontaneousQuote, 5000);
-                return;
-            }
-             
+
+            if(!bubble || !avatar || !quotes || quotes.length === 0) return;
+
+            // Spontane timer resetten als we handmatig klikken, anders verschijnt er direct nog een
+            clearTimeout(spontaneousQuoteTimer);
+
             bubble.innerText = quotes[Math.floor(Math.random() * quotes.length)];
             bubble.classList.add('show');
             avatar.style.transform = "scale(1.1) rotate(" + (isLeft ? "-5deg" : "5deg") + ")";
+
+            // Verberg na 4 seconden
             setTimeout(() => {
                 bubble.classList.remove('show');
                 avatar.style.transform = "scale(1) rotate(0deg)";
-            }, 7000);
-            setTimeout(triggerSpontaneousQuote, Math.random() * 13000 + 12000);
+                // Start de spontane cyclus weer nadat de ballon verborgen is
+                startSpontaneousQuoteCycle(); 
+            }, 4000);
         }
-        setTimeout(triggerSpontaneousQuote, 5000);
+
+        // De oorspronkelijke spontane cyclus, nu als start-functie
+        function startSpontaneousQuoteCycle() {
+            clearTimeout(spontaneousQuoteTimer);
+            // Plan de volgende quote over 12 tot 25 seconden
+            spontaneousQuoteTimer = setTimeout(() => {
+                const isLeft = Math.random() > 0.5;
+                showQuote(isLeft);
+            }, Math.random() * 13000 + 12000);
+        }
+
+        // Event listeners voor klikken op avatars
+        document.getElementById('avatar-left').addEventListener('click', () => showQuote(true));
+        document.getElementById('avatar-right').addEventListener('click', () => showQuote(false));
+
+        // Start de spontane cyclus voor het eerst na 5 seconden
+        setTimeout(startSpontaneousQuoteCycle, 5000);
 
         // === 4. DYNAMISCH GRID GENERATIE ===
         function setupDotsGrid() {
@@ -602,11 +626,12 @@
             const timeRemaining = new Date(endDateStr).getTime() - now.getTime();
             const todayStr = getLocalDateString(now);
 
-            if (todayStr !== lastCheckedDayStr) {
-                lastCheckedDayStr = todayStr;
+            // HIER GEFIXT: Veiligere check voor dagwissel voorkomt dubbele confetti
+            if (lastCheckedDayStr && todayStr !== lastCheckedDayStr) {
                 triggerConfetti(); 
                 autoSelectToday();
             }
+            lastCheckedDayStr = todayStr;
 
             const dots = document.querySelectorAll('.day-dot');
             dots.forEach(dot => {
@@ -696,6 +721,7 @@
             }
         });
 
+        // Start alles op
         loadSharedDates();
         setInterval(updateCountdown, 1000);
     </script>
