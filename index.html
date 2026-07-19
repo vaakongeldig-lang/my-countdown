@@ -407,11 +407,11 @@
                     document.getElementById('inputEnd').value = endDateStr;
                      
                     if(data.quotes_her) {
-                        quotesLeft = data.quotes_her.split(',').map(s => s.trim());
+                        quotesLeft = data.quotes_her.split('|').map(s => s.trim()).filter(s => s.length > 0);
                         document.getElementById('inputQuotesHer').value = data.quotes_her;
                     }
                     if(data.quotes_him) {
-                        quotesRight = data.quotes_him.split(',').map(s => s.trim());
+                        quotesRight = data.quotes_him.split('|').map(s => s.trim()).filter(s => s.length > 0);
                         document.getElementById('inputQuotesHim').value = data.quotes_him;
                     }
 
@@ -448,8 +448,12 @@
                 startDateStr = payload.new.start_date;
                 endDateStr = payload.new.end_date;
                 dailyNotes = payload.new.daily_notes || {};
-                if(payload.new.quotes_her) quotesLeft = payload.new.quotes_her.split(',').map(s => s.trim());
-                if(payload.new.quotes_him) quotesRight = payload.new.quotes_him.split(',').map(s => s.trim());
+                if(payload.new.quotes_her) {
+                    quotesLeft = payload.new.quotes_her.split('|').map(s => s.trim()).filter(s => s.length > 0);
+                }
+                if(payload.new.quotes_him) {
+                    quotesRight = payload.new.quotes_him.split('|').map(s => s.trim()).filter(s => s.length > 0);
+                }
                  
                 setupDotsGrid();
                 populateDaySelector();
