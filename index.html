@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Countdown</title>
+    <title>Countdown & Story Game</title>
     <!-- Supabase CDN & Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -16,6 +16,11 @@
             --text-main: #2d3142;
             --text-muted: #9095a7;
             --dot-empty: #e9ecef;
+            --danger-color: #dc3545;
+            
+            /* Moderne verhaalkleuren */
+            --color-maggie: #d97d75; /* Warm terracotta roze */
+            --color-kaman: #4a7c85;   /* Elegant oceaanblauw */
         }
 
         * {
@@ -40,17 +45,7 @@
             gap: 2rem;
         }
 
-        /* VASTE ADMIN ZONE LINKSBOVEN */
-        .secret-admin-trigger {
-            position: fixed;
-            top: 0; left: 0;
-            width: 120px; height: 120px;
-            background: rgba(0, 0, 0, 0); 
-            border: none; outline: none;
-            cursor: default; z-index: 9999; 
-        }
-
-        /* LAAG 1: Main Counter (KLIKBAAR GEMAAKT) */
+        /* LAAG 1: Main Counter & Badges */
         .main-display {
             text-align: center;
             width: 100%;
@@ -59,12 +54,8 @@
             user-select: none;
             transition: transform 0.2s ease, opacity 0.2s ease;
         }
-        .main-display:hover {
-            transform: scale(1.02);
-        }
-        .main-display:active {
-            transform: scale(0.98);
-        }
+        .main-display:hover { transform: scale(1.02); }
+        .main-display:active { transform: scale(0.98); }
 
         .countdown-row {
             display: flex;
@@ -83,33 +74,66 @@
             letter-spacing: 2px; color: var(--text-muted);
             margin-top: 0.5rem; display: block;
         }
-        .total-hours-badge {
-            display: inline-block; background: var(--card-bg);
+        
+        .badges-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge-btn {
+            background: var(--card-bg);
             padding: 0.6rem 1.2rem; border-radius: 50px;
             font-size: 0.85rem; color: var(--text-main); font-weight: 500;
             letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(0,0,0,0.02);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
         }
-        .total-hours-badge span { color: var(--accent-soft); font-weight: 700; }
+        .badge-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        }
+        .badge-btn span { color: var(--accent-soft); font-weight: 700; }
+        
+        /* Turn-gebaseerde badge styling */
+        .badge-btn.my-turn {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            animation: pulse-badge 2s infinite ease-in-out;
+        }
+        .badge-btn.their-turn {
+            background: #fff3e0;
+            border: 1px solid #ffcc80;
+            color: #e65100;
+        }
+        .badge-btn.completed-turn {
+            background: #fffde7;
+            border: 1px solid #fff59d;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.15);
+        }
+        
+        @keyframes pulse-badge {
+            0% { box-shadow: 0 4px 15px rgba(13, 71, 161, 0.05); }
+            50% { box-shadow: 0 4px 20px rgba(13, 71, 161, 0.2); transform: scale(1.02); }
+            100% { box-shadow: 0 4px 15px rgba(13, 71, 161, 0.05); }
+        }
 
-        /* Stijl voor de alternatieve statistieken */
         .alternative-stats-display {
-            font-size: 1.4rem;
-            font-weight: 300;
-            line-height: 1.4;
-            color: var(--text-main);
-            padding: 1.5rem 2rem;
-            background: var(--card-bg);
-            border-radius: 24px;
+            font-size: 1.4rem; font-weight: 300; line-height: 1.4;
+            color: var(--text-main); padding: 1.5rem 2rem;
+            background: var(--card-bg); border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-            display: inline-block;
-            max-width: 420px;
+            display: inline-block; max-width: 420px;
             border: 1px solid rgba(0,0,0,0.01);
         }
-        .alternative-stats-display strong {
-            color: var(--accent-soft);
-            font-weight: 700;
-        }
+        .alternative-stats-display strong { color: var(--accent-soft); font-weight: 700; }
 
         .msg-completed {
             font-size: 1.4rem; color: var(--accent-gold);
@@ -129,21 +153,25 @@
         }
         .couple-avatars {
             display: flex; align-items: center; justify-content: center;
-            gap: 2.5rem;
-            position: relative; width: 100%; height: 90px;
+            gap: 2.5rem; position: relative; width: 100%; height: 90px;
         }
-        .top-avatar-container { position: relative; }
+        .top-avatar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
         .top-avatar {
             width: 75px; height: 75px; border-radius: 50%;
             object-fit: cover; border: 3px solid #fff;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease;
-            cursor: pointer;
+            transition: transform 0.3s ease; cursor: pointer;
         }
         .top-avatar:hover {
             transform: scale(1.05);
             box-shadow: 0 6px 20px rgba(0,0,0,0.12);
         }
+        
         .beating-heart {
             font-size: 28px; color: var(--accent-soft);
             animation: heartbeat 1s infinite ease-in-out;
@@ -159,7 +187,7 @@
 
         /* Speech Bubbles */
         .speech-bubble {
-            position: absolute; bottom: 95px;
+            position: absolute; bottom: 105px;
             background: var(--text-main); color: #fff;
             padding: 0.6rem 1rem; border-radius: 16px;
             font-size: 0.85rem; font-weight: 500;
@@ -176,94 +204,41 @@
         #bubble-right { right: 10px; transform: translateY(10px); }
         .speech-bubble.show { opacity: 1; transform: translateY(0) !important; }
 
-        /* LAAG 3: BOLLETJES TIJDSLIJN CONTAINER */
+        /* LAAG 3: BOLLETJES TIJDSLIJN */
         .timeline-container {
             width: 100%; max-width: 450px;
             background: var(--card-bg); padding: 2.2rem 1.5rem;
             border-radius: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
             border: 1px solid rgba(0,0,0,0.01);
         }
-        .dots-grid {
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 14px 12px;
-            justify-content: center; 
-            margin-bottom: 1.5rem;
-        }
-
-        /* Container voor bolletje + nummertje */
-        .dot-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* Basis stijl voor de bollen */
+        .dots-grid { display: flex; flex-wrap: wrap; gap: 14px 12px; justify-content: center; margin-bottom: 1.5rem; }
+        .dot-wrapper { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .day-dot {
             width: 26px; height: 26px; border-radius: 50%;
             background-color: var(--dot-empty); border: 2px solid transparent;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer; user-select: none;
         }
-        .day-dot:hover {
-            transform: scale(1.2);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .day-dot:active { transform: scale(0.95); }
-
-        /* Dag passeert -> Goud */
-        .day-dot.passed {
-            background-color: var(--accent-gold);
-            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
-        }
-        .day-dot.passed:hover {
-            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.6);
-        }
-
-        /* Dag is VANDAAG -> Fonkelen */
+        .day-dot:hover { transform: scale(1.2); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .day-dot.passed { background-color: var(--accent-gold); box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); }
         .day-dot.today {
-            background-color: var(--accent-soft);
-            animation: dot-sparkle 2s infinite ease-in-out;
-            box-shadow: 0 0 12px var(--accent-soft);
-            z-index: 2;
+            background-color: var(--accent-soft); animation: dot-sparkle 2s infinite ease-in-out;
+            box-shadow: 0 0 12px var(--accent-soft); z-index: 2;
         }
-        @keyframes dot-sparkle {
-            0% { transform: scale(1); box-shadow: 0 0 6px var(--accent-soft); }
-            50% { transform: scale(1.25); box-shadow: 0 0 16px var(--accent-soft); }
-            100% { transform: scale(1); box-shadow: 0 0 6px var(--accent-soft); }
-        }
+        .dot-number { font-size: 0.65rem; font-weight: 600; color: var(--text-muted); }
+        .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem; padding: 0 4px; }
 
-        /* Nummering onder de bolletjes */
-        .dot-number {
-            font-size: 0.65rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            user-select: none;
-        }
-
-        .timeline-labels {
-            display: flex; justify-content: space-between;
-            font-size: 0.75rem; color: var(--text-muted);
-            text-transform: uppercase; letter-spacing: 1px;
-            margin-top: 0.5rem; padding: 0 4px;
-        }
-
-        /* LAAG 4: Micro-Dagboek Display Box */
+        /* LAAG 4: Micro-Dagboek */
         .day-note-display {
-            width: 100%; max-width: 450px;
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px dashed rgba(0,0,0,0.08);
-            padding: 1.2rem; border-radius: 20px;
-            font-size: 0.88rem;
-            text-align: center; color: var(--text-main);
-            transition: all 0.3s ease; opacity: 0; transform: translateY(5px);
-            margin-bottom: 2rem;
+            width: 100%; max-width: 450px; background: rgba(255, 255, 255, 0.7);
+            border: 1px dashed rgba(0,0,0,0.08); padding: 1.2rem; border-radius: 20px;
+            font-size: 0.88rem; text-align: center; color: var(--text-main);
+            transition: all 0.3s ease; opacity: 0; transform: translateY(5px); margin-bottom: 2rem;
         }
         .day-note-display.show { opacity: 1; transform: translateY(0); }
         .day-note-display .note-date { font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px; font-size: 0.75rem; text-transform: uppercase; }
 
-        /* Light Minimal Admin Modal */
+        /* MODAL POPUPS */
         .modal {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(248, 249, 250, 0.98);
@@ -273,78 +248,122 @@
         }
         .modal.open { opacity: 1; pointer-events: auto; }
         .modal-content {
-            background: var(--card-bg); width: 100%; max-width: 420px;
+            background: var(--card-bg); width: 100%; max-width: 480px;
             padding: 2.2rem 2rem; border-radius: 32px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(0,0,0,0.02); max-height: 90vh; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 1rem; position: relative;
         }
-        .modal-content h2 { font-size: 1.2rem; font-weight: 500; margin-bottom: 1.2rem; color: var(--text-main); }
+        
+        .game-admin-toggle-btn {
+            position: absolute; top: 2rem; right: 2rem;
+            background: none; border: none; font-size: 1.3rem;
+            cursor: pointer; padding: 4px; transition: transform 0.3s ease;
+        }
+        .game-admin-toggle-btn:hover { transform: rotate(45deg); }
+
+        .game-turn-banner {
+            background: var(--bg-color); padding: 0.6rem; border-radius: 12px;
+            text-align: center; font-size: 0.9rem; font-weight: 600;
+            border: 1px solid rgba(0,0,0,0.02); margin-top: 0.5rem;
+        }
+        .game-turn-banner.your-turn { background: #e3f2fd; color: #0d47a1; border-color: #bbdefb; }
+        .game-turn-banner.waiting-turn { background: #fff3e0; color: #e65100; border-color: #ffe0b2; }
+
+        .story-turns-countdown {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--text-muted); font-weight: 700; text-align: center;
+        }
+
+        /* TEXT BOX */
+        .story-display-box {
+            background: var(--bg-color); padding: 1.5rem; border-radius: 18px;
+            min-height: 240px; max-height: 380px; overflow-y: auto;
+            font-size: 1.05rem; line-height: 1.6; color: var(--text-main);
+            border: 1px solid rgba(0,0,0,0.03);
+            text-align: left;
+        }
+        
+        .story-paragraph {
+            display: inline-block;
+            width: 100%;
+            word-wrap: break-word;
+        }
+        
+        .story-segment {
+            display: inline;
+            white-space: normal;
+        }
+        .story-segment.maggie {
+            color: var(--color-maggie);
+        }
+        .story-segment.kaman {
+            color: var(--color-kaman);
+        }
+
+        .word-counter-wrapper {
+            display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);
+            margin-top: -4px; padding: 0 4px;
+        }
+        .word-counter-wrapper.over-limit { color: var(--danger-color); font-weight: bold; }
+
         .form-group { margin-bottom: 1rem; }
         .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; }
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.8rem; background: var(--bg-color); border: 1px solid rgba(0, 0, 0, 0.05); border-radius: 14px; color: var(--text-main); font-size: 0.95rem; }
-        .form-group textarea { resize: vertical; min-height: 60px; }
-         
+        
         .admin-actions { display: flex; gap: 0.75rem; margin-top: 1.2rem; }
         .btn-action { width: 100%; padding: 0.9rem; border: none; border-radius: 14px; font-weight: 600; cursor: pointer; }
         .btn-save { background: var(--text-main); color: #fff; }
         .btn-cancel { background: #e9ecef; color: var(--text-main); }
+        .btn-danger { background: var(--danger-color); color: #fff; }
+
+        .invisible-admin-trigger {
+            position: absolute; top: 0; left: 0; width: 60px; height: 60px; cursor: default; z-index: 99999;
+        }
     </style>
 </head>
 <body>
 
-    <button class="secret-admin-trigger" id="secretAdminBtn"></button>
+    <div class="invisible-admin-trigger" id="mainAdminTrigger"></div>
 
-    <!-- LAAG 1: DE COUNTDOWN TIMERS -->
-    <div class="main-display" id="clickableCounter" title="Klik voor leuke feitjes!">
-        <!-- Normale weergave -->
+    <!-- LAAG 1: TIMERS -->
+    <div class="main-display" id="clickableCounter">
         <div id="normalCounterView">
             <div class="countdown-row" id="timerContainer">
-                <div class="time-group">
-                    <span class="number" id="days">00</span>
-                    <span class="label">Dagen</span>
-                </div>
-                <div class="time-group">
-                    <span class="number" id="hours">00</span>
-                    <span class="label">Uren</span>
-                </div>
-                <div class="time-group">
-                    <span class="number" id="minutes">00</span>
-                    <span class="label">Minuten</span>
-                </div>
-            </div>
-             
-            <div class="total-hours-badge" id="totalHoursContainer">
-                Nog <span id="totalHours">0</span> uur
+                <div class="time-group"><span class="number" id="days">00</span><span class="label">Dagen</span></div>
+                <div class="time-group"><span class="number" id="hours">00</span><span class="label">Uren</span></div>
+                <div class="time-group"><span class="number" id="minutes">00</span><span class="label">Minuten</span></div>
             </div>
         </div>
-
-        <!-- Alternatieve feitjes-weergave -->
         <div id="alternativeCounterView" style="display: none;">
-            <div class="alternative-stats-display" id="alternativeStatsContent">
-                Laden... 🤔
-            </div>
+            <div class="alternative-stats-display" id="alternativeStatsContent">Laden... 🤔</div>
         </div>
+    </div>
+    
+    <div class="badges-wrapper">
+        <div class="badge-btn" style="cursor: default;">Nog <span id="totalHours">0</span> uur</div>
+        <div class="badge-btn" id="openGameBtn">📖 Ons Verhaal</div>
     </div>
 
     <div class="msg-completed" id="completedMessage">Eindelijk weer samen. ❤️</div>
 
-    <!-- LAAG 2: ONZE AVATARS -->
+    <!-- LAAG 2: AVATARS -->
     <div class="couple-header">
         <div class="speech-bubble" id="bubble-left"></div>
         <div class="speech-bubble" id="bubble-right"></div>
          
         <div class="couple-avatars">
             <div class="top-avatar-container">
-                <img src="m.jpg" alt="Haar" class="top-avatar" id="avatar-left">
+                <img src="m.jpg" alt="Maggie" class="top-avatar" id="avatar-left">
             </div>
-            <div class="beating-heart">❤</div>
+            <div class="beating-heart" id="mainHeartIcon">❤</div>
             <div class="top-avatar-container">
-                <img src="k.jpg" alt="Mij" class="top-avatar" id="avatar-right">
+                <img src="k.jpg" alt="Kaman" class="top-avatar" id="avatar-right">
             </div>
         </div>
     </div>
 
-    <!-- LAAG 3: DE TIJDSLIJN BOLLETJES -->
+    <!-- LAAG 3: TIJDSLIJN -->
     <div class="timeline-container">
         <div class="dots-grid" id="dotsGrid"></div>
         <div class="timeline-labels">
@@ -353,104 +372,116 @@
         </div>
     </div>
 
-    <!-- LAAG 4: DE MICRO DAGBOEK -->
+    <!-- LAAG 4: DAGBOEK -->
     <div class="day-note-display" id="dayNoteDisplay">
-        <span class="note-date" id="noteDateTitle">Klik op een day...</span>
+        <span class="note-date" id="noteDateTitle">Klik op een dag...</span>
         <span id="noteTextContent">Bekijk wat er die dag gebeurd is!</span>
     </div>
 
-    <!-- Admin Panel -->
-    <div class="modal" id="adminModal">
+    <!-- MAIN APP ADMIN MODAL -->
+    <div class="modal" id="mainAdminModal">
         <div class="modal-content">
-            <h2>Instellingen & Dagboek</h2>
-            <div class="form-group">
-                <label for="inputStart">Vertrekdatum</label>
-                <input type="datetime-local" id="inputStart">
-            </div>
-            <div class="form-group">
-                <label for="inputEnd">Terugkomstdatum</label>
-                <input type="datetime-local" id="inputEnd">
-            </div>
-            <div class="form-group">
-                <label for="inputQuotesHer">Haar Quotes</label>
-                <textarea id="inputQuotesHer"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="inputQuotesHim">Mijn Quotes</label>
-                <textarea id="inputQuotesHim"></textarea>
-            </div>
-             
-            <hr style="border: 0; border-top: 1px solid rgba(0,0,0,0.08); margin: 1rem 0;">
-             
-            <div class="form-group">
-                <label for="selectNoteDay">Kies Dag voor Notitie</label>
-                <select id="selectNoteDay"><option value="">-- Eerst datums laden --</option></select>
-            </div>
-            <div class="form-group">
-                <label for="inputDayNote">Korte Notitie/Herinnering voor deze dag</label>
-                <textarea id="inputDayNote" placeholder="Bijvoorbeeld: Vandaag FaceTime date gehad! 🍕"></textarea>
-            </div>
-
+            <h2 style="text-align: center; font-weight: 500; color: var(--accent-gold);">⚙️ Algemene Instellingen</h2>
+            <div class="form-group"><label>Vertrekdatum</label><input type="datetime-local" id="inputStart"></div>
+            <div class="form-group"><label>Terugkomstdatum</label><input type="datetime-local" id="inputEnd"></div>
+            <div class="form-group"><label>Haar Quotes (Maggie)</label><textarea id="inputQuotesHer" rows="3"></textarea></div>
+            <div class="form-group"><label>Mijn Quotes (Kaman)</label><textarea id="inputQuotesHim" rows="3"></textarea></div>
+            <div class="form-group"><label>Kies Dag voor Dagboeknotitie</label><select id="selectNoteDay"><option value="">-- Laden --</option></select></div>
+            <div class="form-group"><label>Korte Notitie voor deze dag</label><textarea id="inputDayNote" rows="2"></textarea></div>
             <div class="admin-actions">
-                <button class="btn-action btn-cancel" id="closeAdmin">Annuleren</button>
-                <button class="btn-action btn-save" id="saveAdmin">Opslaan</button>
+                <button class="btn-action btn-cancel" id="closeMainAdminBtn">Annuleren</button>
+                <button class="btn-action btn-save" id="saveMainAdminBtn">Opslaan 💾</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME POPUP MODAL -->
+    <div class="modal" id="gameModal">
+        <div class="modal-content">
+            <button class="game-admin-toggle-btn" id="gameAdminToggleBtn">⚙️</button>
+            <h2 style="text-align: center; font-weight: 500; padding-right: 2rem;" id="gameTitle">📖 Kettingverhaal</h2>
+            
+            <div class="game-turn-banner" id="gameTurnBanner">Laden... 🤔</div>
+            <div class="story-turns-countdown" id="storyTurnsCountdown">Ronde -- / --</div>
+
+            <!-- HET VERHAAL DISPLAY VAK (DOORLOPEND) -->
+            <div class="story-display-box" id="storyDisplayBox">Laden...</div>
+
+            <div id="gameInputSection" style="display: none;">
+                <div class="form-group">
+                    <label id="inputLabelText">Jouw beurt! Typ het vervolg:</label>
+                    <textarea id="gameTextInput" placeholder="Typ hier je toevoeging..."></textarea>
+                    <div class="word-counter-wrapper" id="wordCounterWrapper">
+                        <span id="wordCountDisplay">0 / 0 woorden</span>
+                        <span id="wordValidationMsg"></span>
+                    </div>
+                </div>
+                <button class="btn-action btn-save" id="submitTurnBtn">Verstuur jouw woorden</button>
+            </div>
+            
+            <div id="gameWaitSection" style="text-align: center; color: var(--text-muted); padding: 1rem; display: none;"></div>
+            <button class="btn-action btn-cancel" id="closeGameBtn">Sluiten</button>
+
+            <!-- GAME RULES ADMIN PANEL -->
+            <div id="gameAdminSection" style="display: none; border-top: 2px dashed rgba(0,0,0,0.08); padding-top: 1rem; margin-top: 1rem;">
+                <h3 style="font-size: 1rem; margin-bottom: 0.8rem; color: var(--accent-gold);">🎮 Spelregels Aanpassen</h3>
+                <div class="form-group"><label>Woordlimiet per beurt</label><input type="number" id="inputWordLimit" min="1" max="100"></div>
+                <div class="form-group"><label>Totaal Aantal Rondes</label><input type="number" id="inputMaxTurns" min="1" max="100"></div>
+                <div class="form-group">
+                    <label>Aantal zichtbare woorden van vorige beurt (-1 voor heel het verhaal)</label>
+                    <input type="number" id="inputVisibilityWords" min="-1" max="100" placeholder="Bijv. 5 of 10">
+                </div>
+                
+                <div class="admin-actions">
+                    <button class="btn-action btn-danger" id="btnResetGame">Reset Verhaal 🗑️</button>
+                    <button class="btn-action btn-save" id="saveGameAdminBtn">Opslaan 💾</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // === 1. INITIALISATIE ===
+        // === 1. INITIALISATIE & SUPABASE ===
         const SUPABASE_URL = "https://ychmiiyefzmcsikmxnyy.supabase.co"; 
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljaG1paXllZnptY3Npa214bnl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzNjIyNTQsImV4cCI6MjA5OTkzODI1NH0.nMZHGGv7MOFzIvhXKChcQMG5nbT50odoz6x7Z4XT3e0";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let startDateStr = "2026-07-16T09:00";
-        let endDateStr = "2026-08-30T18:00";
-        let quotesLeft = [];
-        let quotesRight = [];
-        let dailyNotes = {}; 
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentUser = urlParams.get('user') === 'maggie' ? 'maggie' : (urlParams.get('user') === 'kaman' ? 'kaman' : 'viewer');
+
+        let startDateStr = "2026-07-16T09:00"; let endDateStr = "2026-08-30T18:00";
+        let quotesLeft = []; let quotesRight = []; let dailyNotes = {}; 
+
+        let gameWordLimit = 10; 
+        let gameMaxRounds = 10; 
+        let gameVisibility = "all"; 
+        let gameCurrentTurn = "maggie"; let gameStoryLines = []; let gameStatus = "active";
         
-        // Veilige lokale datumberekening
         function getLocalDateString(dateObj = new Date()) {
             const offset = dateObj.getTimezoneOffset();
-            const localDate = new Date(dateObj.getTime() - (offset * 60 * 1000));
-            return localDate.toISOString().split('T')[0];
+            return new Date(dateObj.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
         }
 
-        let lastCheckedDayStr = null; 
-        let spontaneousQuoteTimer = null;
-
-        function setStatus(status, text) {
-            console.log(`[Supabase Status]: ${status} - ${text}`);
-        }
+        let lastCheckedDayStr = null; let spontaneousQuoteTimer = null;
+        let mainAdminClickCount = 0; let mainAdminClickTimer = null;
 
         function triggerConfetti() {
-            confetti({
-                particleCount: 140,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#d4af37', '#e8a7a1', '#ffffff', '#f4d068']
-            });
+            confetti({ particleCount: 140, spread: 70, origin: { y: 0.6 }, colors: ['#d4af37', '#e8a7a1', '#ffffff', '#f4d068'] });
         }
 
-        // === 2. DATA LAAD LOGICA ===
+        // === 2. DATA CONFIGURATIE EN REALTIME SYNC ===
         async function loadSharedDates() {
             try {
-                const { data, error } = await supabaseClient
-                    .from('countdown_settings')
-                    .select('*')
-                    .single();
-
+                const { data, error } = await supabaseClient.from('countdown_settings').select('*').single();
                 if (error) throw error;
 
                 if (data) {
-                    startDateStr = data.start_date;
-                    endDateStr = data.end_date;
+                    startDateStr = data.start_date; endDateStr = data.end_date;
                     dailyNotes = data.daily_notes || {}; 
-                     
+                    
                     document.getElementById('inputStart').value = startDateStr;
                     document.getElementById('inputEnd').value = endDateStr;
-                     
+                    
                     if(data.quotes_her) {
                         quotesLeft = data.quotes_her.split('|').map(s => s.trim()).filter(s => s.length > 0);
                         document.getElementById('inputQuotesHer').value = data.quotes_her;
@@ -460,347 +491,447 @@
                         document.getElementById('inputQuotesHim').value = data.quotes_him;
                     }
 
-                    setupDotsGrid();
-                    populateDaySelector();
-                    updateCountdown();
-                    autoSelectToday();
-                    setStatus('online', 'Supabase Live');
+                    gameWordLimit = data.game_word_limit || 10;
+                    gameMaxRounds = data.game_max_turns || 10; 
+                    gameVisibility = data.game_visibility || "all";
+                    gameCurrentTurn = data.game_current_turn || "maggie";
+                    gameStoryLines = data.game_story_lines || [];
+                    gameStatus = data.game_status || "active";
+
+                    document.getElementById('inputWordLimit').value = gameWordLimit;
+                    document.getElementById('inputMaxTurns').value = gameMaxRounds;
+                    
+                    if (gameVisibility === 'all' || gameVisibility === '-1') {
+                        document.getElementById('inputVisibilityWords').value = "-1";
+                    } else if (gameVisibility.startsWith('words_')) {
+                        document.getElementById('inputVisibilityWords').value = gameVisibility.split('_')[1];
+                    } else {
+                        document.getElementById('inputVisibilityWords').value = gameVisibility; 
+                    }
+
+                    setupDotsGrid(); populateDaySelector(); updateCountdown(); autoSelectToday(); updateGameUI(false);
+                    updateMainBadgeIndicator();
                 }
             } catch (err) {
-                console.error("Database verbinding mislukt:", err);
-                setStatus('offline', 'Offline (Fallback)');
-                setupDotsGrid();
-                updateCountdown();
-                autoSelectToday();
+                console.error("Fout bij inladen data:", err);
+                setupDotsGrid(); updateCountdown(); autoSelectToday();
             }
         }
 
         supabaseClient
             .channel('public:countdown_settings')
             .on('postgres_changes', { event: 'UPDATE', table: 'countdown_settings' }, payload => {
-                startDateStr = payload.new.start_date;
-                endDateStr = payload.new.end_date;
+                const oldTurn = gameCurrentTurn;
+                startDateStr = payload.new.start_date; endDateStr = payload.new.end_date;
                 dailyNotes = payload.new.daily_notes || {};
                 
-                if(payload.new.quotes_her) {
-                    quotesLeft = payload.new.quotes_her.split('|').map(s => s.trim()).filter(s => s.length > 0);
-                }
-                if(payload.new.quotes_him) {
-                    quotesRight = payload.new.quotes_him.split('|').map(s => s.trim()).filter(s => s.length > 0);
-                }
+                if(payload.new.quotes_her) quotesLeft = payload.new.quotes_her.split('|').map(s => s.trim()).filter(s => s.length > 0);
+                if(payload.new.quotes_him) quotesRight = payload.new.quotes_him.split('|').map(s => s.trim()).filter(s => s.length > 0);
                  
-                setupDotsGrid();
-                populateDaySelector();
-                updateCountdown();
-                autoSelectToday();
+                gameWordLimit = payload.new.game_word_limit || 10;
+                gameMaxRounds = payload.new.game_max_turns || 10;
+                gameVisibility = payload.new.game_visibility || "all";
+                gameCurrentTurn = payload.new.game_current_turn || "maggie";
+                gameStoryLines = payload.new.game_story_lines || [];
+                gameStatus = payload.new.game_status || "active";
+
+                setupDotsGrid(); populateDaySelector(); updateCountdown(); autoSelectToday();
+                const turnChangedToMe = (oldTurn !== gameCurrentTurn && gameCurrentTurn === currentUser);
+                updateGameUI(turnChangedToMe);
+                updateMainBadgeIndicator();
             })
             .subscribe();
 
-        // === 3. CITATEN MECHANISME ===
-        function showQuote(isLeft) {
-            const bubbleId = isLeft ? 'bubble-left' : 'bubble-right';
-            const avatarId = isLeft ? 'avatar-left' : 'avatar-right';
+        // === 3. MAIN APP 3-KLIK TRIGGER ===
+        document.getElementById('mainAdminTrigger').addEventListener('click', () => {
+            mainAdminClickCount++; clearTimeout(mainAdminClickTimer);
+            if (mainAdminClickCount === 3) {
+                mainAdminClickCount = 0; document.getElementById('mainAdminModal').classList.add('open');
+            } else {
+                mainAdminClickTimer = setTimeout(() => { mainAdminClickCount = 0; }, 1000);
+            }
+        });
+        document.getElementById('closeMainAdminBtn').addEventListener('click', () => {
+            document.getElementById('mainAdminModal').classList.remove('open');
+        });
+
+        // === BEURT INDICATOR VOOR HOOFDSCHERM BADGE ===
+function updateMainBadgeIndicator() {
+            const badge = document.getElementById('openGameBtn');
+            if (!badge) return;
             
-            const bubble = document.getElementById(bubbleId);
-            const avatar = document.getElementById(avatarId);
+            badge.classList.remove('my-turn', 'their-turn', 'completed-turn');
+            
+            if (gameStatus === 'finished') {
+                badge.innerText = "📖 Ons Verhaal";
+                badge.classList.add('completed-turn');
+            } else if (currentUser === 'viewer' || gameStoryLines.length === 0) {
+                badge.innerText = "📖 Ons Verhaal";
+            } else if (currentUser === gameCurrentTurn) {
+                badge.innerText = "📖 Mijn beurt";
+                badge.classList.add('my-turn');
+            } else {
+                badge.innerText = "📖 Jouw liefje's beurt";
+                badge.classList.add('their-turn');
+            }
+        }
+
+        // === 4. SPEECH BUBBLES ===
+        function showQuote(isLeft) {
+            const bubble = document.getElementById(isLeft ? 'bubble-left' : 'bubble-right');
+            const avatar = document.getElementById(isLeft ? 'avatar-left' : 'avatar-right');
             const quotes = isLeft ? quotesLeft : quotesRight;
-
             if(!bubble || !avatar || !quotes || quotes.length === 0) return;
-
             clearTimeout(spontaneousQuoteTimer);
-
             bubble.innerText = quotes[Math.floor(Math.random() * quotes.length)];
             bubble.classList.add('show');
-            avatar.style.transform = "scale(1.1) rotate(" + (isLeft ? "-5deg" : "5deg") + ")";
-
+            avatar.style.transform = `scale(1.1) rotate(${isLeft ? "-5deg" : "5deg"})`;
             setTimeout(() => {
-                bubble.classList.remove('show');
-                avatar.style.transform = "scale(1) rotate(0deg)";
+                bubble.classList.remove('show'); avatar.style.transform = "scale(1) rotate(0deg)";
                 startSpontaneousQuoteCycle(); 
             }, 4000);
         }
-
         function startSpontaneousQuoteCycle() {
             clearTimeout(spontaneousQuoteTimer);
-            spontaneousQuoteTimer = setTimeout(() => {
-                const isLeft = Math.random() > 0.5;
-                showQuote(isLeft);
-            }, Math.random() * 13000 + 12000);
+            spontaneousQuoteTimer = setTimeout(() => { showQuote(Math.random() > 0.5); }, Math.random() * 13000 + 12000);
         }
-
         document.getElementById('avatar-left').addEventListener('click', () => showQuote(true));
         document.getElementById('avatar-right').addEventListener('click', () => showQuote(false));
-
         setTimeout(startSpontaneousQuoteCycle, 5000);
 
-        // === 3B. COUNTER FEITJES LOGICA (NIEUW) ===
-        let showAlternativeStats = false;
-        let statsResetTimer = null;
-        let currentStatIndex = 0;
-
+        // === 5. COUNTER FEITJES ===
+        let showAlternativeStats = false; let statsResetTimer = null; let currentStatIndex = 0;
         const clickableCounter = document.getElementById('clickableCounter');
         const normalView = document.getElementById('normalCounterView');
         const alternativeView = document.getElementById('alternativeCounterView');
         const statsContent = document.getElementById('alternativeStatsContent');
 
         clickableCounter.addEventListener('click', () => {
-            showAlternativeStats = !showAlternativeStats;
-            clearTimeout(statsResetTimer);
-
+            showAlternativeStats = !showAlternativeStats; clearTimeout(statsResetTimer);
             if (showAlternativeStats) {
-                const now = new Date();
-                const totalTime = new Date(endDateStr).getTime() - new Date(startDateStr).getTime();
-                const timeRemaining = new Date(endDateStr).getTime() - now.getTime();
-                const timePassed = totalTime - timeRemaining;
-
+                const now = new Date(); const totalTime = new Date(endDateStr).getTime() - new Date(startDateStr).getTime();
+                const timeRemaining = new Date(endDateStr).getTime() - now.getTime(); const timePassed = totalTotal = totalTime - timeRemaining;
                 if (timeRemaining > 0) {
-                    const totalSeconds = Math.floor(timeRemaining / 1000);
-                    const totalMinutes = Math.floor(timeRemaining / (1000 * 60));
-                    const totalNights = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
-                    const percentagePassed = Math.min(100, Math.max(0, (timePassed / totalTime) * 100)).toFixed(1);
-
+                    const totalSeconds = Math.floor(timeRemaining / 1000); const totalMinutes = Math.floor(timeRemaining / (1000 * 60));
+                    const totalNights = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24)); const percentagePassed = Math.min(100, Math.max(0, (timePassed / totalTime) * 100)).toFixed(1);
                     const statsOptions = [
                         `Dat zijn nog precies <strong>${totalSeconds.toLocaleString('nl-NL')}</strong> seconden wachten! ⏱️`,
-                        //`Nog maar <strong>${totalNights}</strong> nachtjes slapen 😴`,
-                        `Al <strong>${percentagePassed}%</strong> van de totale tijd voorbij! 💪`,
+                        `Nog maar <strong>${totalNights}</strong> nachtjes slapen en dan zijn we weer samen! 😴`,
+                        `Al <strong>${percentagePassed}%</strong> van de totale tijd is al voorbij! We overleven dit! 💪`,
                         `Dat is nog maar <strong>${totalMinutes.toLocaleString('nl-NL')}</strong> minuutjes geduld hebben! 💋`
                     ];
-
-                    statsContent.innerHTML = statsOptions[currentStatIndex];
-                    currentStatIndex = (currentStatIndex + 1) % statsOptions.length;
-                } else {
-                    statsContent.innerHTML = "Welkom terug schat! ❤️";
-                }
-
-                normalView.style.display = 'none';
-                alternativeView.style.display = 'block';
-
-                statsResetTimer = setTimeout(() => {
-                    showAlternativeStats = false;
-                    alternativeView.style.display = 'none';
-                    normalView.style.display = 'block';
-                }, 5000);
-
-            } else {
-                alternativeView.style.display = 'none';
-                normalView.style.display = 'block';
-            }
+                    statsContent.innerHTML = statsOptions[currentStatIndex]; currentStatIndex = (currentStatIndex + 1) % statsOptions.length;
+                } else { statsContent.innerHTML = "We zijn eindelijk weer samen! ❤️"; }
+                normalView.style.display = 'none'; alternativeView.style.display = 'block';
+                statsResetTimer = setTimeout(() => { showAlternativeStats = false; alternativeView.style.display = 'none'; normalView.style.display = 'block'; }, 5000);
+            } else { alternativeView.style.display = 'none'; normalView.style.display = 'block'; }
         });
 
-        // === 4. DYNAMISCH GRID GENERATIE ===
+        // === 6. TIJDSLIJN GRID ===
         function setupDotsGrid() {
             const start = new Date(startDateStr); start.setHours(0,0,0,0);
             const end = new Date(endDateStr); end.setHours(0,0,0,0);
-             
-            const diffTime = Math.abs(end - start);
-            const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
-             
-            const gridContainer = document.getElementById('dotsGrid');
-            if(!gridContainer) return;
+            const totalDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1; 
+            const gridContainer = document.getElementById('dotsGrid'); if(!gridContainer) return;
             gridContainer.innerHTML = '';
-
             for (let i = 0; i < totalDays; i++) {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'dot-wrapper';
-
-                const dot = document.createElement('div');
-                dot.className = 'day-dot';
-                 
-                const dotDate = new Date(start);
-                dotDate.setDate(start.getDate() + i);
+                const wrapper = document.createElement('div'); wrapper.className = 'dot-wrapper';
+                const dot = document.createElement('div'); dot.className = 'day-dot';
+                const dotDate = new Date(start); dotDate.setDate(start.getDate() + i);
                 const dateIsoStr = getLocalDateString(dotDate);
-                dot.setAttribute('data-date', dateIsoStr);
-                dot.setAttribute('data-readable', formatDateLabel(dotDate));
-                dot.setAttribute('data-index', i + 1);
-
+                dot.setAttribute('data-date', dateIsoStr); dot.setAttribute('data-readable', formatDateLabel(dotDate)); dot.setAttribute('data-index', i + 1);
                 dot.addEventListener('click', () => {
                     showMicroDiary(dateIsoStr, dot.getAttribute('data-readable'), i + 1);
-                     
-                    if (dot.classList.contains('passed') || dot.classList.contains('today')) {
-                        triggerConfetti();
-                    }
+                    if (dot.classList.contains('passed') || dot.classList.contains('today')) triggerConfetti();
                 });
-                 
-                const numLabel = document.createElement('span');
-                numLabel.className = 'dot-number';
-                numLabel.innerText = i + 1;
-
-                wrapper.appendChild(dot);
-                wrapper.appendChild(numLabel);
-                gridContainer.appendChild(wrapper);
+                const numLabel = document.createElement('span'); numLabel.className = 'dot-number'; numLabel.innerText = i + 1;
+                wrapper.appendChild(dot); wrapper.appendChild(numLabel); gridContainer.appendChild(wrapper);
             }
             document.getElementById('labelStart').innerText = formatDateLabel(startDateStr);
             document.getElementById('labelEnd').innerText = formatDateLabel(endDateStr);
         }
 
         function formatDateLabel(dateInput) {
-            const d = new Date(dateInput);
-            const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+            const d = new Date(dateInput); const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
             return d.getDate() + ' ' + months[d.getMonth()];
         }
 
         function showMicroDiary(dateIso, readableDate, dayNumber) {
-            const displayBox = document.getElementById('dayNoteDisplay');
-            const titleNode = document.getElementById('noteDateTitle');
-            const contentNode = document.getElementById('noteTextContent');
-             
-            const todayStr = getLocalDateString();
-            let statusSuffix = "";
-            if(dateIso < todayStr) statusSuffix = " (Voltooid ✨)";
-            else if(dateIso === todayStr) statusSuffix = " (Vandaag ⏱️)";
-             
-            titleNode.innerText = "Dag " + dayNumber + " - " + readableDate + statusSuffix;
-
-            if(dailyNotes[dateIso]) {
-                contentNode.innerText = dailyNotes[dateIso];
-            } else {
-                contentNode.innerText = "Nog geen speciale herinnering opgeschreven voor deze dag. ❤️";
-            }
-             
+            const displayBox = document.getElementById('dayNoteDisplay'); const titleNode = document.getElementById('noteDateTitle'); const contentNode = document.getElementById('noteTextContent');
+            const todayStr = getLocalDateString(); let statusSuffix = "";
+            if(dateIso < todayStr) statusSuffix = " (Voltooid ✨)"; else if(dateIso === todayStr) statusSuffix = " (Vandaag ⏱️)";
+            titleNode.innerText = `Dag ${dayNumber} - ${readableDate}${statusSuffix}`; contentNode.innerText = dailyNotes[dateIso] || "Nog geen speciale herinnering opgeschreven voor deze dag. ❤️";
             displayBox.classList.add('show');
         }
 
         function autoSelectToday() {
-            const todayStr = getLocalDateString();
-            const todayDot = document.querySelector(`.day-dot[data-date="${todayStr}"]`);
-            if (todayDot) {
-                showMicroDiary(todayStr, todayDot.getAttribute('data-readable'), todayDot.getAttribute('data-index'));
-            } else {
-                const firstDot = document.querySelector('.day-dot');
-                if (firstDot) {
-                    showMicroDiary(firstDot.getAttribute('data-date'), firstDot.getAttribute('data-readable'), 1);
-                }
-            }
+            const todayStr = getLocalDateString(); const todayDot = document.querySelector(`.day-dot[data-date="${todayStr}"]`);
+            if (todayDot) showMicroDiary(todayStr, todayDot.getAttribute('data-readable'), todayDot.getAttribute('data-index'));
+            else { const firstDot = document.querySelector('.day-dot'); if (firstDot) showMicroDiary(firstDot.getAttribute('data-date'), firstDot.getAttribute('data-readable'), 1); }
         }
 
         function populateDaySelector() {
-            const select = document.getElementById('selectNoteDay');
-            if(!select) return;
+            const select = document.getElementById('selectNoteDay'); if(!select) return;
             select.innerHTML = '<option value="">-- Kies een dag --</option>';
-             
-            const start = new Date(startDateStr); start.setHours(0,0,0,0);
-            const end = new Date(endDateStr); end.setHours(0,0,0,0);
-            const diffTime = Math.abs(end - start);
-            const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
+            const start = new Date(startDateStr); start.setHours(0,0,0,0); const end = new Date(endDateStr); end.setHours(0,0,0,0);
+            const totalDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
             for(let i=0; i<totalDays; i++) {
-                const d = new Date(start);
-                d.setDate(start.getDate() + i);
-                const iso = getLocalDateString(d);
-                const opt = document.createElement('option');
-                opt.value = iso;
-                opt.innerText = "Dag " + (i + 1) + " (" + formatDateLabel(d) + ")";
+                const d = new Date(start); d.setDate(start.getDate() + i); const iso = getLocalDateString(d);
+                const opt = document.createElement('option'); opt.value = iso; opt.innerText = `Dag ${i + 1} (${formatDateLabel(d)})`;
                 select.appendChild(opt);
             }
         }
+        document.getElementById('selectNoteDay').addEventListener('change', (e) => { document.getElementById('inputDayNote').value = dailyNotes[e.target.value] || ""; });
 
-        document.getElementById('selectNoteDay').addEventListener('change', (e) => {
-            const chosenIso = e.target.value;
-            document.getElementById('inputDayNote').value = dailyNotes[chosenIso] || "";
-        });
-
-        // === 5. LIVE COUNTDOWN & LIVE SWAP CHECK ===
         function updateCountdown() {
-            const now = new Date();
-            const timeRemaining = new Date(endDateStr).getTime() - now.getTime();
-            const todayStr = getLocalDateString(now);
-
-            if (lastCheckedDayStr && todayStr !== lastCheckedDayStr) {
-                triggerConfetti(); 
-                autoSelectToday();
-            }
+            const now = new Date(); const timeRemaining = new Date(endDateStr).getTime() - now.getTime(); const todayStr = getLocalDateString(now);
+            if (lastCheckedDayStr && todayStr !== lastCheckedDayStr) { triggerConfetti(); autoSelectToday(); }
             lastCheckedDayStr = todayStr;
-
-            const dots = document.querySelectorAll('.day-dot');
-            dots.forEach(dot => {
-                const dotDateStr = dot.getAttribute('data-date');
-                dot.classList.remove('passed', 'today');
-
-                if (dotDateStr < todayStr) {
-                    dot.classList.add('passed');
-                } else if (dotDateStr === todayStr) {
-                    dot.classList.add('today');
-                }
+            document.querySelectorAll('.day-dot').forEach(dot => {
+                const dotDateStr = dot.getAttribute('data-date'); dot.classList.remove('passed', 'today');
+                if (dotDateStr < todayStr) dot.classList.add('passed'); else if (dotDateStr === todayStr) dot.classList.add('today');
             });
-
-            if (timeRemaining <= 0) {
-                document.getElementById('clickableCounter').style.display = 'none';
-                document.getElementById('completedMessage').style.display = 'block';
-                return;
-            }
-
-            if (!showAlternativeStats) {
-                document.getElementById('clickableCounter').style.display = 'block';
-                document.getElementById('completedMessage').style.display = 'none';
-            }
-
-            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-
-            document.getElementById('days').innerText = days < 10 ? "0" + days : days;
-            document.getElementById('hours').innerText = hours < 10 ? "0" + hours : hours;
-            document.getElementById('minutes').innerText = minutes < 10 ? "0" + minutes : minutes;
+            if (timeRemaining <= 0) { document.getElementById('clickableCounter').style.display = 'none'; document.getElementById('completedMessage').style.display = 'block'; return; }
+            if (!showAlternativeStats) { document.getElementById('clickableCounter').style.display = 'block'; document.getElementById('completedMessage').style.display = 'none'; }
+            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24)); const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+            document.getElementById('days').innerText = days < 10 ? "0" + days : days; document.getElementById('hours').innerText = hours < 10 ? "0" + hours : hours; document.getElementById('minutes').innerText = minutes < 10 ? "0" + minutes : minutes;
             document.getElementById('totalHours').innerText = Math.floor(timeRemaining / (1000 * 60 * 60));
         }
 
-        // === 6. ADMIN EVENT HANDLERS ===
-        const modal = document.getElementById('adminModal');
-        let clickCount = 0; let clickTimer;
-         
-        document.getElementById('secretAdminBtn').addEventListener('click', () => {
-            clickCount++;
-            clearTimeout(clickTimer);
-            if (clickCount === 3) {
-                modal.classList.add('open');
-                clickCount = 0;
-            }
-            clickTimer = setTimeout(() => { clickCount = 0; }, 1500); 
-        });
-         
-        document.getElementById('closeAdmin').addEventListener('click', () => modal.classList.remove('open'));
+        // === MASKERINGS LOGICA MET BEHOUD VAN SPATIES & LEESTEKENS ===
+        function maskStringKeepingPunctuation(str) {
+            return str.replace(/[a-zA-Z0-9]/g, '#');
+        }
 
-        document.getElementById('saveAdmin').addEventListener('click', async () => {
-            setStatus('connecting', 'Bijwerken...');
-            const startVal = document.getElementById('inputStart').value;
-            const endVal = document.getElementById('inputEnd').value;
-            const qHerVal = document.getElementById('inputQuotesHer').value;
-            const qHimVal = document.getElementById('inputQuotesHim').value;
-             
-            const selectedDayIso = document.getElementById('selectNoteDay').value;
-            const noteText = document.getElementById('inputDayNote').value;
-            if(selectedDayIso) {
-                if(noteText.trim() === "") {
-                    delete dailyNotes[selectedDayIso];
+        function renderMaskedStory(storyLines, visibilityLimit, isGameFinished) {
+            const container = document.createElement('p');
+            container.className = "story-paragraph";
+
+            // Als alles zichtbaar is of de game is afgelopen, tonen we het volledige verhaal zonder maskers
+            if (visibilityLimit === -1 || isGameFinished) {
+                storyLines.forEach((line, idx) => {
+                    const span = document.createElement('span');
+                    span.className = `story-segment ${line.author}`;
+                    span.innerText = line.text + (idx === storyLines.length - 1 ? "" : " ");
+                    container.appendChild(span);
+                });
+                return container;
+            }
+
+            // We verzamelen alle woorden over het gehele verhaal om de limiet toe te passen
+            // Elk woord onthoudt uit welke regel (index) hij komt
+            let allWordsTokens = [];
+            storyLines.forEach((line, lineIdx) => {
+                // We splitten op spaties maar behouden spatie-informatie via tokens
+                const parts = line.text.split(/(\s+)/);
+                parts.forEach(part => {
+                    if (part.length === 0) return;
+                    const isWord = /\S/.test(part); // Geen pure whitespace
+                    allWordsTokens.push({
+                        text: part,
+                        isWord: isWord,
+                        lineIdx: lineIdx,
+                        author: line.author
+                    });
+                });
+            });
+
+            // Tel hoeveel daadwerkelijke woorden er in de allerlaatste regel zitten
+            const lastLineIdx = storyLines.length - 1;
+            let totalWordsInLastLine = allWordsTokens.filter(t => t.lineIdx === lastLineIdx && t.isWord).length;
+            
+            // Bepaal hoeveel woorden er exact getoond mogen worden vanaf het einde van de LAATSTE regel
+            // Het mag nooit meer zijn dan de limiet én nooit meer dan het aantal woorden dat de laatste speler typte
+            const allowedVisibleWords = Math.min(visibilityLimit, totalWordsInLastLine);
+
+            // Bepaal vanaf welk echt woord (binnen de laatste regel) we mogen stoppen met maskeren
+            let wordCounter = 0;
+            for (let i = allWordsTokens.length - 1; i >= 0; i--) {
+                if (allWordsTokens[i].lineIdx === lastLineIdx && allWordsTokens[i].isWord) {
+                    wordCounter++;
+                    if (wordCounter <= allowedVisibleWords) {
+                        allWordsTokens[i].shouldMask = false;
+                    } else {
+                        allWordsTokens[i].shouldMask = true;
+                    }
                 } else {
-                    dailyNotes[selectedDayIso] = noteText;
+                    // Alle oudere regels of eerdere beurten worden sowieso gemaskeerd
+                    allWordsTokens[i].shouldMask = allWordsTokens[i].isWord;
                 }
+            }
+
+            // Bouw nu de HTML elementen op per opeenvolgende speler
+            let currentAuthor = null;
+            let currentSpan = null;
+
+            allWordsTokens.forEach((token, idx) => {
+                if (token.author !== currentAuthor) {
+                    if (currentSpan) container.appendChild(currentSpan);
+                    currentAuthor = token.author;
+                    currentSpan = document.createElement('span');
+                    currentSpan.className = `story-segment ${currentAuthor}`;
+                }
+
+                if (token.isWord && token.shouldMask) {
+                    currentSpan.innerText += maskStringKeepingPunctuation(token.text);
+                } else {
+                    currentSpan.innerText += token.text;
+                }
+                
+                // Voeg een spatie toe tussen beurten als dat nodig is
+                if (idx === allWordsTokens.length - 1) {
+                    // einde verhaal
+                } else if (allWordsTokens[idx+1].lineIdx !== token.lineIdx && !token.text.endsWith(" ")) {
+                    currentSpan.innerText += " ";
+                }
+            });
+
+            if (currentSpan) container.appendChild(currentSpan);
+            return container;
+        }
+
+        // === 7. SPEL ENGINE ===
+        const gameModal = document.getElementById('gameModal'); const openGameBtn = document.getElementById('openGameBtn'); const closeGameBtn = document.getElementById('closeGameBtn');
+        const storyDisplayBox = document.getElementById('storyDisplayBox'); const storyTurnsCountdown = document.getElementById('storyTurnsCountdown');
+        const gameTurnBanner = document.getElementById('gameTurnBanner'); const gameInputSection = document.getElementById('gameInputSection');
+        const gameWaitSection = document.getElementById('gameWaitSection'); const gameTextInput = document.getElementById('gameTextInput');
+        const submitTurnBtn = document.getElementById('submitTurnBtn'); const wordCountDisplay = document.getElementById('wordCountDisplay');
+        const wordCounterWrapper = document.getElementById('wordCounterWrapper'); const gameAdminSection = document.getElementById('gameAdminSection');
+        const gameAdminToggleBtn = document.getElementById('gameAdminToggleBtn');
+
+        openGameBtn.addEventListener('click', () => { gameModal.classList.add('open'); if (gameStatus === 'active' && gameCurrentTurn === currentUser) triggerHapticFeedback(); });
+        closeGameBtn.addEventListener('click', () => { gameModal.classList.remove('open'); gameAdminSection.style.display = 'none'; });
+        gameAdminToggleBtn.addEventListener('click', () => { gameAdminSection.style.display = gameAdminSection.style.display === 'none' ? 'block' : 'none'; });
+
+        function triggerHapticFeedback() { if (navigator.vibrate) navigator.vibrate(100); }
+
+        function updateGameUI(shouldVibrate = false) {
+            if (shouldVibrate && gameModal.classList.contains('open')) triggerHapticFeedback();
+
+            const currentRoundNumber = Math.floor(gameStoryLines.length / 2) + 1;
+
+            if (gameStatus === 'finished') {
+                storyTurnsCountdown.innerText = "📕 HET VERHAAL IS COMPLEET!";
+                gameTurnBanner.className = "game-turn-banner";
+                gameTurnBanner.innerHTML = `🎉 Voltooid! Alle ${gameMaxRounds} rondes zijn afgerond.`;
+            } else {
+                storyTurnsCountdown.innerText = `Ronde ${Math.min(currentRoundNumber, gameMaxRounds)} / ${gameMaxRounds}`;
+                if (currentUser === 'viewer') {
+                    gameTurnBanner.className = "game-turn-banner waiting-turn"; gameTurnBanner.innerHTML = `👀 Modus bekijken. ${gameCurrentTurn === 'maggie' ? 'Maggie' : 'Kaman'} schrijft nu.`;
+                } else if (currentUser === gameCurrentTurn) {
+                    gameTurnBanner.className = "game-turn-banner your-turn"; gameTurnBanner.innerHTML = "🖊️ Jij bent aan de beurt! Voeg je woorden toe.";
+                } else {
+                    gameTurnBanner.className = "game-turn-banner waiting-turn"; gameTurnBanner.innerHTML = `⏳ ${gameCurrentTurn === 'maggie' ? 'Maggie' : 'Kaman'} is aan de beurt...`;
+                }
+            }
+
+            if (gameStoryLines.length === 0) {
+                storyDisplayBox.innerHTML = "<em>Er is nog geen verhaal gestart. Schrijf de eerste regel!</em>";
+            } else {
+                storyDisplayBox.innerHTML = "";
+                
+                let limit = -1;
+                if (gameVisibility !== 'all' && gameVisibility !== '-1') {
+                    if (gameVisibility.startsWith('words_')) {
+                        limit = parseInt(gameVisibility.split('_')[1]) || -1;
+                    } else {
+                        limit = parseInt(gameVisibility) ?? -1;
+                    }
+                }
+
+                // Genereer de volledig doorlopende (gemaskeerde) tekst
+                const paragraphNode = renderMaskedStory(gameStoryLines, limit, gameStatus === 'finished');
+                storyDisplayBox.appendChild(paragraphNode);
+            }
+            storyDisplayBox.scrollTop = storyDisplayBox.scrollHeight;
+
+            if (gameStatus === 'finished') {
+                gameInputSection.style.display = 'none'; gameWaitSection.style.display = 'block';
+                gameWaitSection.innerHTML = "🍕 Dit verhaal is helemaal af! Jullie kunnen het nu samen lezen.";
+            } else if (currentUser === 'viewer') {
+                gameInputSection.style.display = 'none'; gameWaitSection.style.display = 'block';
+                gameWaitSection.innerText = "Open de app met je eigen link om mee te schrijven! ❤️";
+            } else if (currentUser === gameCurrentTurn) {
+                gameInputSection.style.display = 'block'; gameWaitSection.style.display = 'none';
+                wordCountDisplay.innerText = `0 / ${gameWordLimit} woorden`; validateWords();
+            } else {
+                gameInputSection.style.display = 'none'; gameWaitSection.style.display = 'block';
+                gameWaitSection.innerText = `${gameCurrentTurn === 'maggie' ? 'Maggie' : 'Kaman'} is nu aan de beurt... ✍️`;
+            }
+        }
+
+        // === 8. LIVE WOORDENTELLER VALIDATIE ===
+        function getWordCount(text) {
+            const cleanText = text.trim(); return cleanText === "" ? 0 : cleanText.split(/\s+/).length;
+        }
+        function validateWords() {
+            const count = getWordCount(gameTextInput.value);
+            wordCountDisplay.innerText = `${count} / ${gameWordLimit} woorden`;
+            if (count > gameWordLimit) {
+                wordCounterWrapper.classList.add('over-limit'); submitTurnBtn.disabled = true; submitTurnBtn.style.opacity = "0.4"; submitTurnBtn.style.cursor = "not-allowed";
+            } else {
+                wordCounterWrapper.classList.remove('over-limit'); submitTurnBtn.disabled = false; submitTurnBtn.style.opacity = "1"; submitTurnBtn.style.cursor = "pointer";
+            }
+        }
+        gameTextInput.addEventListener('input', validateWords);
+
+        submitTurnBtn.addEventListener('click', async () => {
+            const text = gameTextInput.value.trim(); if (text === "" || getWordCount(text) > gameWordLimit) return;
+            const updatedLines = [...gameStoryLines, { author: currentUser, text: text }];
+            
+            const nextTurn = currentUser === 'maggie' ? 'kaman' : 'maggie';
+            let nextStatus = 'active';
+            const completedRounds = Math.floor(updatedLines.length / 2);
+            
+            if (completedRounds >= gameMaxRounds && currentUser === 'kaman') {
+                nextStatus = 'finished';
             }
 
             const { error } = await supabaseClient
                 .from('countdown_settings')
-                .update({ 
-                    start_date: startVal, 
-                    end_date: endVal,
-                    quotes_her: qHerVal,
-                    quotes_him: qHimVal,
-                    daily_notes: dailyNotes
-                })
+                .update({ game_story_lines: updatedLines, game_current_turn: nextTurn, game_status: nextStatus })
                 .eq('id', 1);
-
-            if (!error) {
-                modal.classList.remove('open');
-                setStatus('online', 'Opgeslagen!');
-                document.getElementById('selectNoteDay').value = "";
-                document.getElementById('inputDayNote').value = "";
-            } else {
-                alert("Fout bij opslaan: " + error.message);
-                setStatus('offline', 'Fout bij opslaan');
-            }
+            if (!error) gameTextInput.value = ""; else alert("Verzenden mislukt: " + error.message);
         });
 
-        loadSharedDates();
-        setInterval(updateCountdown, 1000);
+        // === 9. HOOFD ADMIN DETECTIE & OPSLAG ===
+        document.getElementById('saveMainAdminBtn').addEventListener('click', async () => {
+            const startVal = document.getElementById('inputStart').value; const endVal = document.getElementById('inputEnd').value;
+            const qHerVal = document.getElementById('inputQuotesHer').value; const qHimVal = document.getElementById('inputQuotesHim').value;
+            const selectedDayIso = document.getElementById('selectNoteDay').value; const noteText = document.getElementById('inputDayNote').value;
+            if(selectedDayIso) { if(noteText.trim() === "") delete dailyNotes[selectedDayIso]; else dailyNotes[selectedDayIso] = noteText; }
+
+            const { error } = await supabaseClient
+                .from('countdown_settings')
+                .update({ start_date: startVal, end_date: endVal, quotes_her: qHerVal, quotes_him: qHimVal, daily_notes: dailyNotes })
+                .eq('id', 1);
+            if (!error) { document.getElementById('mainAdminModal').classList.remove('open'); document.getElementById('selectNoteDay').value = ""; document.getElementById('inputDayNote').value = ""; } else alert("Opslaan mislukt: " + error.message);
+        });
+
+        // === 10. GAME ADMIN OPSLAAN ===
+        document.getElementById('saveGameAdminBtn').addEventListener('click', async () => {
+            const wLimit = parseInt(document.getElementById('inputWordLimit').value) || 10;
+            const mRounds = parseInt(document.getElementById('inputMaxTurns').value) || 10; 
+            const visWords = document.getElementById('inputVisibilityWords').value.trim();
+
+            const { error } = await supabaseClient
+                .from('countdown_settings')
+                .update({ game_word_limit: wLimit, game_max_turns: mRounds, game_visibility: visWords })
+                .eq('id', 1);
+
+            if (!error) gameAdminSection.style.display = 'none'; else alert("Fout bij opslaan regels: " + error.message);
+        });
+
+        document.getElementById('btnResetGame').addEventListener('click', async () => {
+            if (!confirm("Weet je zeker dat je het huidige verhaal wilt wissen? Alle data gaat verloren.")) return;
+            const { error } = await supabaseClient
+                .from('countdown_settings')
+                .update({ game_story_lines: [], game_current_turn: "maggie", game_status: "active" })
+                .eq('id', 1);
+            if (!error) gameAdminSection.style.display = 'none';
+        });
+
+        loadSharedDates(); setInterval(updateCountdown, 1000);
     </script>
 </body>
 </html>
