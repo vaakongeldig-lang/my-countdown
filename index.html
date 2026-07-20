@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Countdown & Story Game</title>
     <!-- Supabase CDN & Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -39,17 +39,24 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding: 3rem 1.5rem 2rem 1.5rem;
+            padding: 1.5rem 1rem;
             overflow-x: hidden;
             position: relative;
-            gap: 2rem;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 480px) {
+            body {
+                padding: 3rem 1.5rem 2rem 1.5rem;
+                gap: 2rem;
+            }
         }
 
         /* LAAG 1: Main Counter & Badges */
         .main-display {
             text-align: center;
             width: 100%;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
             cursor: pointer;
             user-select: none;
             transition: transform 0.2s ease, opacity 0.2s ease;
@@ -61,33 +68,66 @@
             display: flex;
             justify-content: center;
             align-items: baseline;
-            gap: 1.5rem;
-            margin-bottom: 1rem;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
         }
+        @media (min-width: 480px) {
+            .countdown-row {
+                gap: 1.5rem;
+                margin-bottom: 1rem;
+            }
+        }
+
         .time-group { text-align: center; }
         .time-group .number {
-            font-size: 4.5rem; font-weight: 200; line-height: 1;
-            color: var(--text-main); display: block; letter-spacing: -1px;
+            font-size: 3rem; 
+            font-weight: 200; 
+            line-height: 1;
+            color: var(--text-main); 
+            display: block; 
+            letter-spacing: -1px;
+            transition: font-size 0.3s;
         }
+        @media (min-width: 480px) {
+            .time-group .number {
+                font-size: 4.5rem;
+            }
+        }
+
         .time-group .label {
-            font-size: 0.75rem; text-transform: uppercase;
-            letter-spacing: 2px; color: var(--text-muted);
-            margin-top: 0.5rem; display: block;
+            font-size: 0.65rem; 
+            text-transform: uppercase;
+            letter-spacing: 1.5px; 
+            color: var(--text-muted);
+            margin-top: 0.4rem; 
+            display: block;
+        }
+        @media (min-width: 480px) {
+            .time-group .label {
+                font-size: 0.75rem;
+                letter-spacing: 2px;
+                margin-top: 0.5rem;
+            }
         }
         
         .badges-wrapper {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
+            width: 100%;
         }
 
         .badge-btn {
             background: var(--card-bg);
-            padding: 0.6rem 1.2rem; border-radius: 50px;
-            font-size: 0.85rem; color: var(--text-main); font-weight: 500;
-            letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            padding: 0.5rem 1rem; 
+            border-radius: 50px;
+            font-size: 0.8rem; 
+            color: var(--text-main); 
+            font-weight: 500;
+            letter-spacing: 0.3px; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(0,0,0,0.02);
             cursor: pointer;
             transition: all 0.2s;
@@ -95,6 +135,13 @@
             align-items: center;
             gap: 6px;
             user-select: none;
+        }
+        @media (min-width: 480px) {
+            .badge-btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.85rem;
+                letter-spacing: 0.5px;
+            }
         }
         .badge-btn:hover {
             transform: translateY(-2px);
@@ -121,24 +168,43 @@
         
         @keyframes pulse-badge {
             0% { box-shadow: 0 4px 15px rgba(13, 71, 161, 0.05); }
-            50% { box-shadow: 0 4px 20px rgba(13, 71, 161, 0.2); transform: scale(1.02); }
+            50% { box-shadow: 0 4px 20px rgba(13, 71, 161, 0.15); transform: scale(1.02); }
             100% { box-shadow: 0 4px 15px rgba(13, 71, 161, 0.05); }
         }
 
         .alternative-stats-display {
-            font-size: 1.4rem; font-weight: 300; line-height: 1.4;
-            color: var(--text-main); padding: 1.5rem 2rem;
-            background: var(--card-bg); border-radius: 24px;
+            font-size: 1.15rem; 
+            font-weight: 300; 
+            line-height: 1.4;
+            color: var(--text-main); 
+            padding: 1.2rem 1.5rem;
+            background: var(--card-bg); 
+            border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-            display: inline-block; max-width: 420px;
+            display: inline-block; 
+            max-width: 90%;
             border: 1px solid rgba(0,0,0,0.01);
+        }
+        @media (min-width: 480px) {
+            .alternative-stats-display {
+                font-size: 1.4rem;
+                padding: 1.5rem 2rem;
+                border-radius: 24px;
+                max-width: 420px;
+            }
         }
         .alternative-stats-display strong { color: var(--accent-soft); font-weight: 700; }
 
         .msg-completed {
-            font-size: 1.4rem; color: var(--accent-gold);
+            font-size: 1.2rem; color: var(--accent-gold);
             text-align: center; font-weight: 400;
-            display: none; margin: 1.5rem 0;
+            display: none; margin: 1rem 0;
+        }
+        @media (min-width: 480px) {
+            .msg-completed {
+                font-size: 1.4rem;
+                margin: 1.5rem 0;
+            }
         }
 
         /* LAAG 2: Couple Section */
@@ -152,8 +218,20 @@
             align-items: center;
         }
         .couple-avatars {
-            display: flex; align-items: center; justify-content: center;
-            gap: 2.5rem; position: relative; width: 100%; height: 90px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            gap: 1.5rem; 
+            position: relative; 
+            width: 100%; 
+            height: 80px;
+            transition: all 0.3s;
+        }
+        @media (min-width: 480px) {
+            .couple-avatars {
+                gap: 2.5rem;
+                height: 90px;
+            }
         }
         .top-avatar-container {
             display: flex;
@@ -162,10 +240,20 @@
             position: relative;
         }
         .top-avatar {
-            width: 75px; height: 75px; border-radius: 50%;
-            object-fit: cover; border: 3px solid #fff;
+            width: 65px; 
+            height: 65px; 
+            border-radius: 50%;
+            object-fit: cover; 
+            border: 3px solid #fff;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease; cursor: pointer;
+            transition: transform 0.3s ease, width 0.3s, height 0.3s; 
+            cursor: pointer;
+        }
+        @media (min-width: 480px) {
+            .top-avatar {
+                width: 75px;
+                height: 75px;
+            }
         }
         .top-avatar:hover {
             transform: scale(1.05);
@@ -173,9 +261,14 @@
         }
         
         .beating-heart {
-            font-size: 28px; color: var(--accent-soft);
+            font-size: 24px; color: var(--accent-soft);
             animation: heartbeat 1s infinite ease-in-out;
             cursor: pointer; user-select: none;
+        }
+        @media (min-width: 480px) {
+            .beating-heart {
+                font-size: 28px;
+            }
         }
         @keyframes heartbeat {
             0% { transform: scale(1); }
@@ -187,13 +280,28 @@
 
         /* Speech Bubbles */
         .speech-bubble {
-            position: absolute; bottom: 105px;
-            background: var(--text-main); color: #fff;
-            padding: 0.6rem 1rem; border-radius: 16px;
-            font-size: 0.85rem; font-weight: 500;
-            white-space: nowrap; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            opacity: 0; pointer-events: none;
-            transition: opacity 0.4s ease, transform 0.4s ease; z-index: 30;
+            position: absolute; 
+            bottom: 95px;
+            background: var(--text-main); 
+            color: #fff;
+            padding: 0.5rem 0.8rem; 
+            border-radius: 14px;
+            font-size: 0.8rem; 
+            font-weight: 500;
+            white-space: nowrap; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            opacity: 0; 
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; 
+            z-index: 30;
+        }
+        @media (min-width: 480px) {
+            .speech-bubble {
+                bottom: 105px;
+                padding: 0.6rem 1rem;
+                border-radius: 16px;
+                font-size: 0.85rem;
+            }
         }
         .speech-bubble::after {
             content: ''; position: absolute; top: 100%; left: 50%;
@@ -206,18 +314,50 @@
 
         /* LAAG 3: BOLLETJES TIJDSLIJN */
         .timeline-container {
-            width: 100%; max-width: 450px;
-            background: var(--card-bg); padding: 2.2rem 1.5rem;
-            border-radius: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            width: 100%; 
+            max-width: 450px;
+            background: var(--card-bg); 
+            padding: 1.5rem 1rem;
+            border-radius: 24px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
             border: 1px solid rgba(0,0,0,0.01);
+            transition: padding 0.3s;
         }
-        .dots-grid { display: flex; flex-wrap: wrap; gap: 14px 12px; justify-content: center; margin-bottom: 1.5rem; }
+        @media (min-width: 480px) {
+            .timeline-container {
+                padding: 2.2rem 1.5rem;
+                border-radius: 32px;
+            }
+        }
+        .dots-grid { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 10px 8px; 
+            justify-content: center; 
+            margin-bottom: 1.2rem; 
+        }
+        @media (min-width: 480px) {
+            .dots-grid {
+                gap: 14px 12px;
+                margin-bottom: 1.5rem;
+            }
+        }
         .dot-wrapper { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .day-dot {
-            width: 26px; height: 26px; border-radius: 50%;
-            background-color: var(--dot-empty); border: 2px solid transparent;
+            width: 22px; 
+            height: 22px; 
+            border-radius: 50%;
+            background-color: var(--dot-empty); 
+            border: 2px solid transparent;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer; user-select: none;
+            cursor: pointer; 
+            user-select: none;
+        }
+        @media (min-width: 480px) {
+            .day-dot {
+                width: 26px;
+                height: 26px;
+            }
         }
         .day-dot:hover { transform: scale(1.2); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .day-dot.passed { background-color: var(--accent-gold); box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); }
@@ -225,7 +365,12 @@
             background-color: var(--accent-soft); animation: dot-sparkle 2s infinite ease-in-out;
             box-shadow: 0 0 12px var(--accent-soft); z-index: 2;
         }
-        .dot-number { font-size: 0.65rem; font-weight: 600; color: var(--text-muted); }
+        .dot-number { font-size: 0.6rem; font-weight: 600; color: var(--text-muted); }
+        @media (min-width: 480px) {
+            .dot-number {
+                font-size: 0.65rem;
+            }
+        }
         .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem; padding: 0 4px; }
 
         /* LAAG 4: Micro-Dagboek */
@@ -244,21 +389,50 @@
             background: rgba(248, 249, 250, 0.98);
             display: flex; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none;
-            transition: opacity 0.3s ease; z-index: 10000; padding: 1.5rem;
+            transition: opacity 0.3s ease; z-index: 10000; 
+            padding: 0.5rem;
+        }
+        @media (min-width: 480px) {
+            .modal {
+                padding: 1.5rem;
+            }
         }
         .modal.open { opacity: 1; pointer-events: auto; }
+        
         .modal-content {
-            background: var(--card-bg); width: 100%; max-width: 480px;
-            padding: 2.2rem 2rem; border-radius: 32px;
+            background: var(--card-bg); 
+            width: 100%; 
+            max-width: 480px;
+            padding: 1.5rem 1.2rem; 
+            border-radius: 24px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0,0,0,0.02); max-height: 90vh; overflow-y: auto;
-            display: flex; flex-direction: column; gap: 1rem; position: relative;
+            border: 1px solid rgba(0,0,0,0.02); 
+            max-height: 95vh; 
+            overflow-y: auto;
+            display: flex; 
+            flex-direction: column; 
+            gap: 1rem; 
+            position: relative;
+            transition: padding 0.3s;
+        }
+        @media (min-width: 480px) {
+            .modal-content {
+                padding: 2.2rem 2rem;
+                border-radius: 32px;
+                max-height: 90vh;
+            }
         }
         
         .game-admin-toggle-btn {
-            position: absolute; top: 2rem; right: 2rem;
+            position: absolute; top: 1.5rem; right: 1.2rem;
             background: none; border: none; font-size: 1.3rem;
             cursor: pointer; padding: 4px; transition: transform 0.3s ease;
+        }
+        @media (min-width: 480px) {
+            .game-admin-toggle-btn {
+                top: 2rem;
+                right: 2rem;
+            }
         }
         .game-admin-toggle-btn:hover { transform: rotate(45deg); }
 
@@ -275,23 +449,33 @@
             color: var(--text-muted); font-weight: 700; text-align: center;
         }
 
-        /* ELEGANT BOEK-ONTWERP VOOR HET VERHAAL */
+        /* TEXT BOX (Boek lay-out) */
         .story-display-box {
-            background: var(--bg-color);
-            padding: 2rem;
-            border-radius: 24px;
-            min-height: 280px;
-            max-height: 400px;
+            background: var(--bg-color); 
+            padding: 1.2rem; 
+            border-radius: 18px;
+            min-height: 180px; 
+            max-height: 260px; 
             overflow-y: auto;
             /* Klassieke Serif/Boek typografie */
             font-family: "Georgia", "Merriweather", "Baskerville", serif;
-            font-size: 1.15rem;
-            line-height: 1.8;
+            font-size: 1.1rem;
+            line-height: 1.7;
             color: var(--text-main);
             border: 1px solid rgba(0, 0, 0, 0.03);
             text-align: left;
             box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.02);
-            transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+            transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease, padding 0.3s, min-height 0.3s, max-height 0.3s;
+        }
+        @media (min-width: 480px) {
+            .story-display-box {
+                padding: 2rem;
+                min-height: 280px;
+                max-height: 400px;
+                font-size: 1.15rem;
+                line-height: 1.8;
+                border-radius: 24px;
+            }
         }
 
         /* Dynamische sfeergloed op basis van de actieve beurt */
@@ -322,7 +506,6 @@
         .story-segment {
             display: inline;
             white-space: normal;
-            animation: fadeInSegment 0.6s ease-out forwards;
         }
         .story-segment.maggie {
             color: var(--color-maggie);
@@ -331,18 +514,45 @@
             color: var(--color-kaman);
         }
 
-        /* Extra stijlinstellingen om gemaskeerde tekens mysterieus en ruimtelijker te maken */
-        .story-masked-char {
-            letter-spacing: 0.15em;
-            opacity: 0.65;
-            font-weight: 600;
+        /* GEAVANCEERDE MORPH TRANSITIONS VOOR ALFANUMERIEKE LETTERS */
+        .morph-char {
+            position: relative;
             display: inline-block;
-            user-select: none;
+            vertical-align: baseline;
         }
 
-        @keyframes fadeInSegment {
-            from { opacity: 0; transform: translateY(2px); }
-            to { opacity: 1; transform: translateY(0); }
+        .morph-char .raw-char {
+            display: inline-block;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), filter 0.8s, transform 0.8s;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .morph-char .hash-char {
+            position: absolute;
+            left: 0;
+            top: 0;
+            display: inline-block;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), filter 0.8s, transform 0.8s;
+            opacity: 0;
+            transform: scale(0.3) rotate(45deg);
+            filter: blur(2px);
+            letter-spacing: 0.15em;
+            font-weight: 600;
+        }
+
+        /* Actieve maskering na de render/transitie */
+        .morph-char.is-masked .raw-char {
+            opacity: 0;
+            transform: scale(0.3) rotate(-45deg);
+            filter: blur(2px);
+            pointer-events: none;
+        }
+
+        .morph-char.is-masked .hash-char {
+            opacity: 0.65;
+            transform: scale(1) rotate(0deg);
+            filter: blur(0px);
         }
 
         .word-counter-wrapper {
@@ -351,12 +561,61 @@
         }
         .word-counter-wrapper.over-limit { color: var(--danger-color); font-weight: bold; }
 
-        .form-group { margin-bottom: 1rem; }
+        .form-group { margin-bottom: 0.75rem; }
+        @media (min-width: 480px) {
+            .form-group {
+                margin-bottom: 1rem;
+            }
+        }
         .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.8rem; background: var(--bg-color); border: 1px solid rgba(0, 0, 0, 0.05); border-radius: 14px; color: var(--text-main); font-size: 0.95rem; }
         
-        .admin-actions { display: flex; gap: 0.75rem; margin-top: 1.2rem; }
-        .btn-action { width: 100%; padding: 0.9rem; border: none; border-radius: 14px; font-weight: 600; cursor: pointer; }
+        /* 16px font-size voorkomt dat iOS Safari inzoomt op klik */
+        .form-group input, .form-group textarea, .form-group select { 
+            width: 100%; 
+            padding: 0.8rem; 
+            background: var(--bg-color); 
+            border: 1px solid rgba(0, 0, 0, 0.05); 
+            border-radius: 14px; 
+            color: var(--text-main); 
+            font-size: 16px !important; 
+        }
+        
+        #gameTextInput {
+            height: 70px;
+            resize: none;
+            transition: height 0.3s;
+        }
+        @media (min-width: 480px) {
+            #gameTextInput {
+                height: 100px;
+            }
+        }
+        
+        .admin-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+        @media (min-width: 480px) {
+            .admin-actions {
+                margin-top: 1.2rem;
+            }
+        }
+        .btn-action { 
+            width: 100%; 
+            padding: 0.8rem; 
+            border: none; 
+            border-radius: 14px; 
+            font-weight: 600; 
+            font-size: 0.95rem;
+            cursor: pointer; 
+            min-height: 44px; /* Goede mobiele touch target size */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @media (min-width: 480px) {
+            .btn-action {
+                padding: 0.9rem;
+                font-size: 1rem;
+            }
+        }
         .btn-save { background: var(--text-main); color: #fff; }
         .btn-cancel { background: #e9ecef; color: var(--text-main); }
         .btn-danger { background: var(--danger-color); color: #fff; }
@@ -460,7 +719,7 @@
                         <span id="wordValidationMsg"></span>
                     </div>
                 </div>
-                <button class="btn-action btn-save" id="submitTurnBtn">Verstuur beurt 🚀</button>
+                <button class="btn-action btn-save" id="submitTurnBtn">Verstuur beurt 🐸</button>
             </div>
             
             <div id="gameWaitSection" style="text-align: center; color: var(--text-muted); padding: 1rem; display: none;"></div>
@@ -742,10 +1001,36 @@
             document.getElementById('totalHours').innerText = Math.floor(timeRemaining / (1000 * 60 * 60));
         }
 
-        // === MASKERINGS LOGICA MET TEXT-OVERGANGEN & CHAR SPACING ===
-        function maskStringKeepingPunctuation(str) {
-            // Vervang elk alfanumeriek teken door een gestylede '#' span
-            return str.replace(/[a-zA-Z0-9]/g, '<span class="story-masked-char">#</span>');
+        // === MAGISCHE TRANSITIE EN MASKERINGS-FRAGMENT GENERATOR ===
+        function createWordMorphNodes(wordText, shouldMask) {
+            const fragment = document.createDocumentFragment();
+            for (let i = 0; i < wordText.length; i++) {
+                const char = wordText[i];
+                // Alleen alfanumerieke karakters splitsen en animeren
+                if (/[a-zA-Z0-9]/.test(char)) {
+                    const morphSpan = document.createElement('span');
+                    morphSpan.className = 'morph-char';
+                    if (shouldMask) {
+                        morphSpan.className += ' pending-mask';
+                    }
+                    
+                    const rawSpan = document.createElement('span');
+                    rawSpan.className = 'raw-char';
+                    rawSpan.textContent = char;
+                    
+                    const hashSpan = document.createElement('span');
+                    hashSpan.className = 'hash-char';
+                    hashSpan.textContent = '#';
+                    
+                    morphSpan.appendChild(rawSpan);
+                    morphSpan.appendChild(hashSpan);
+                    fragment.appendChild(morphSpan);
+                } else {
+                    // Leestekens direct ongemaskeerd als platte tekst toevoegen
+                    fragment.appendChild(document.createTextNode(char));
+                }
+            }
+            return fragment;
         }
 
         function renderMaskedStory(storyLines, visibilityLimit, isGameFinished) {
@@ -802,13 +1087,9 @@
                     currentSpan.className = `story-segment ${currentAuthor}`;
                 }
 
-                if (token.isWord && token.shouldMask) {
-                    const maskedHtml = maskStringKeepingPunctuation(token.text);
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = maskedHtml;
-                    while (tempDiv.firstChild) {
-                        currentSpan.appendChild(tempDiv.firstChild);
-                    }
+                if (token.isWord) {
+                    const wordNodes = createWordMorphNodes(token.text, token.shouldMask);
+                    currentSpan.appendChild(wordNodes);
                 } else {
                     currentSpan.appendChild(document.createTextNode(token.text));
                 }
@@ -861,7 +1142,7 @@
                     gameTurnBanner.innerHTML = `👀 Modus bekijken. ${gameCurrentTurn === 'maggie' ? 'Maggie' : 'Kaman'} schrijft nu.`;
                 } else if (currentUser === gameCurrentTurn) {
                     gameTurnBanner.className = "game-turn-banner your-turn"; 
-                    gameTurnBanner.innerHTML = "✍️ Jij bent aan de beurt! Voeg jouw woorden toe.";
+                    gameTurnBanner.innerHTML = "✍️ Jij bent aan de beurt! Voeg woorden toe.";
                 } else {
                     gameTurnBanner.className = "game-turn-banner waiting-turn"; 
                     gameTurnBanner.innerHTML = `⏳ ${gameCurrentTurn === 'maggie' ? 'Maggie' : 'Kaman'} is aan de beurt...`;
@@ -886,17 +1167,25 @@
                 storyDisplayBox.appendChild(paragraphNode);
             }
             
+            // TRIGGER DE TRANSITIE MET TIMEOUT VOOR DE LETTERS NAAR HASHTAGS
+            setTimeout(() => {
+                document.querySelectorAll('.morph-char.pending-mask').forEach(el => {
+                    el.classList.remove('pending-mask');
+                    el.classList.add('is-masked');
+                });
+            }, 50);
+            
             // Soepele automatische scroll naar beneden bij updates
             setTimeout(() => {
                 storyDisplayBox.scrollTo({
                     top: storyDisplayBox.scrollHeight,
                     behavior: 'smooth'
                 });
-            }, 50);
+            }, 100);
 
             if (gameStatus === 'finished') {
                 gameInputSection.style.display = 'none'; gameWaitSection.style.display = 'block';
-                gameWaitSection.innerHTML = "🍕 Dit verhaal is helemaal af! Jullie kunnen het nu samen lezen.";
+                gameWaitSection.innerHTML = "🩷 Dit verhaal is helemaal af. Veel plezier! 🩷.";
             } else if (currentUser === 'viewer') {
                 gameInputSection.style.display = 'none'; gameWaitSection.style.display = 'block';
                 gameWaitSection.innerText = "Open de app met je eigen link om mee te schrijven! ❤️";
