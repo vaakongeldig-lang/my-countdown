@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Countdown & Story Game</title>
-    <!-- Supabase CDN & Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -17,10 +16,8 @@
             --text-muted: #9095a7;
             --dot-empty: #e9ecef;
             --danger-color: #dc3545;
-            
-            /* Moderne verhaalkleuren */
-            --color-maggie: #d97d75; /* Warm terracotta roze */
-            --color-kaman: #4a7c85;   /* Elegant oceaanblauw */
+            --color-maggie: #d97d75;
+            --color-kaman: #4a7c85;
         }
 
         * {
@@ -72,44 +69,35 @@
             margin-bottom: 0.75rem;
         }
         @media (min-width: 480px) {
-            .countdown-row {
-                gap: 1.5rem;
-                margin-bottom: 1rem;
-            }
+            .countdown-row { gap: 1.5rem; margin-bottom: 1rem; }
         }
 
         .time-group { text-align: center; }
         .time-group .number {
-            font-size: 3rem; 
-            font-weight: 200; 
+            font-size: 3rem;
+            font-weight: 200;
             line-height: 1;
-            color: var(--text-main); 
-            display: block; 
+            color: var(--text-main);
+            display: block;
             letter-spacing: -1px;
             transition: font-size 0.3s;
         }
         @media (min-width: 480px) {
-            .time-group .number {
-                font-size: 4.5rem;
-            }
+            .time-group .number { font-size: 4.5rem; }
         }
 
         .time-group .label {
-            font-size: 0.65rem; 
+            font-size: 0.65rem;
             text-transform: uppercase;
-            letter-spacing: 1.5px; 
+            letter-spacing: 1.5px;
             color: var(--text-muted);
-            margin-top: 0.4rem; 
+            margin-top: 0.4rem;
             display: block;
         }
         @media (min-width: 480px) {
-            .time-group .label {
-                font-size: 0.75rem;
-                letter-spacing: 2px;
-                margin-top: 0.5rem;
-            }
+            .time-group .label { font-size: 0.75rem; letter-spacing: 2px; margin-top: 0.5rem; }
         }
-        
+
         .badges-wrapper {
             display: flex;
             justify-content: center;
@@ -121,12 +109,12 @@
 
         .badge-btn {
             background: var(--card-bg);
-            padding: 0.5rem 1rem; 
+            padding: 0.5rem 1rem;
             border-radius: 50px;
-            font-size: 0.8rem; 
-            color: var(--text-main); 
+            font-size: 0.8rem;
+            color: var(--text-main);
             font-weight: 500;
-            letter-spacing: 0.3px; 
+            letter-spacing: 0.3px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(0,0,0,0.02);
             cursor: pointer;
@@ -137,19 +125,11 @@
             user-select: none;
         }
         @media (min-width: 480px) {
-            .badge-btn {
-                padding: 0.6rem 1.2rem;
-                font-size: 0.85rem;
-                letter-spacing: 0.5px;
-            }
+            .badge-btn { padding: 0.6rem 1.2rem; font-size: 0.85rem; letter-spacing: 0.5px; }
         }
-        .badge-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-        }
+        .badge-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
         .badge-btn span { color: var(--accent-soft); font-weight: 700; }
-        
-        /* Turn-gebaseerde badge styling */
+
         .badge-btn.my-turn {
             background: #e3f2fd;
             border: 1px solid #90caf9;
@@ -165,7 +145,7 @@
             border: 1px solid #fff59d;
             box-shadow: 0 4px 15px rgba(212, 175, 55, 0.15);
         }
-        
+
         @keyframes pulse-badge {
             0% { box-shadow: 0 4px 15px rgba(13, 71, 161, 0.05); }
             50% { box-shadow: 0 4px 20px rgba(13, 71, 161, 0.15); transform: scale(1.02); }
@@ -173,25 +153,20 @@
         }
 
         .alternative-stats-display {
-            font-size: 1.15rem; 
-            font-weight: 300; 
+            font-size: 1.15rem;
+            font-weight: 300;
             line-height: 1.4;
-            color: var(--text-main); 
+            color: var(--text-main);
             padding: 1.2rem 1.5rem;
-            background: var(--card-bg); 
+            background: var(--card-bg);
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-            display: inline-block; 
-            max-width: 90%;
+            display: inline-block;
+            max-width: min(90%, 420px);
             border: 1px solid rgba(0,0,0,0.01);
         }
         @media (min-width: 480px) {
-            .alternative-stats-display {
-                font-size: 1.4rem;
-                padding: 1.5rem 2rem;
-                border-radius: 24px;
-                max-width: 420px;
-            }
+            .alternative-stats-display { font-size: 1.4rem; padding: 1.5rem 2rem; border-radius: 24px; }
         }
         .alternative-stats-display strong { color: var(--accent-soft); font-weight: 700; }
 
@@ -201,10 +176,7 @@
             display: none; margin: 1rem 0;
         }
         @media (min-width: 480px) {
-            .msg-completed {
-                font-size: 1.4rem;
-                margin: 1.5rem 0;
-            }
+            .msg-completed { font-size: 1.4rem; margin: 1.5rem 0; }
         }
 
         /* LAAG 2: Couple Section */
@@ -218,20 +190,17 @@
             align-items: center;
         }
         .couple-avatars {
-            display: flex; 
-            align-items: center; 
+            display: flex;
+            align-items: center;
             justify-content: center;
-            gap: 1.5rem; 
-            position: relative; 
-            width: 100%; 
+            gap: 1.5rem;
+            position: relative;
+            width: 100%;
             height: 80px;
             transition: all 0.3s;
         }
         @media (min-width: 480px) {
-            .couple-avatars {
-                gap: 2.5rem;
-                height: 90px;
-            }
+            .couple-avatars { gap: 2.5rem; height: 90px; }
         }
         .top-avatar-container {
             display: flex;
@@ -240,35 +209,31 @@
             position: relative;
         }
         .top-avatar {
-            width: 65px; 
-            height: 65px; 
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
-            object-fit: cover; 
+            object-fit: cover;
             border: 3px solid #fff;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease, width 0.3s, height 0.3s; 
+            transition: transform 0.3s ease, width 0.3s, height 0.3s;
             cursor: pointer;
         }
         @media (min-width: 480px) {
-            .top-avatar {
-                width: 75px;
-                height: 75px;
-            }
+            .top-avatar { width: 75px; height: 75px; }
         }
-        .top-avatar:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-        }
-        
+        .top-avatar:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+
+        /* FIX: Hartje heeft nu een click-handler die het sneller laat kloppen */
         .beating-heart {
-            font-size: 24px; color: var(--accent-soft);
+            font-size: 24px;
+            color: var(--accent-soft);
             animation: heartbeat 1s infinite ease-in-out;
-            cursor: pointer; user-select: none;
+            cursor: pointer;
+            user-select: none;
+            transition: font-size 0.2s;
         }
         @media (min-width: 480px) {
-            .beating-heart {
-                font-size: 28px;
-            }
+            .beating-heart { font-size: 28px; }
         }
         @keyframes heartbeat {
             0% { transform: scale(1); }
@@ -277,35 +242,48 @@
             42% { transform: scale(1.3); }
             70% { transform: scale(1); }
         }
+        @keyframes heartbeat-fast {
+            0% { transform: scale(1); }
+            10% { transform: scale(1.4); }
+            20% { transform: scale(1.1); }
+            30% { transform: scale(1.5); }
+            40% { transform: scale(1.1); }
+            50% { transform: scale(1.4); }
+            60% { transform: scale(1); }
+            100% { transform: scale(1); }
+        }
+        .beating-heart.fast {
+            animation: heartbeat-fast 0.5s infinite ease-in-out;
+        }
 
         /* Speech Bubbles */
         .speech-bubble {
-            position: absolute; 
+            position: absolute;
             bottom: 95px;
-            background: var(--text-main); 
+            background: var(--text-main);
             color: #fff;
-            padding: 0.5rem 0.8rem; 
+            padding: 0.5rem 0.8rem;
             border-radius: 14px;
-            font-size: 0.8rem; 
+            font-size: 0.8rem;
             font-weight: 500;
-            white-space: nowrap; 
+            white-space: nowrap;
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            opacity: 0; 
+            opacity: 0;
             pointer-events: none;
-            transition: opacity 0.4s ease, transform 0.4s ease; 
+            transition: opacity 0.4s ease, transform 0.4s ease;
             z-index: 30;
         }
         @media (min-width: 480px) {
-            .speech-bubble {
-                bottom: 105px;
-                padding: 0.6rem 1rem;
-                border-radius: 16px;
-                font-size: 0.85rem;
-            }
+            .speech-bubble { bottom: 105px; padding: 0.6rem 1rem; border-radius: 16px; font-size: 0.85rem; }
         }
         .speech-bubble::after {
-            content: ''; position: absolute; top: 100%; left: 50%;
-            transform: translateX(-50%); border-width: 6px; border-style: solid;
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
             border-color: var(--text-main) transparent transparent transparent;
         }
         #bubble-left { left: 10px; transform: translateY(10px); }
@@ -314,224 +292,309 @@
 
         /* LAAG 3: BOLLETJES TIJDSLIJN */
         .timeline-container {
-            width: 100%; 
+            width: 100%;
             max-width: 450px;
-            background: var(--card-bg); 
+            background: var(--card-bg);
             padding: 1.5rem 1rem;
-            border-radius: 24px; 
+            border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
             border: 1px solid rgba(0,0,0,0.01);
             transition: padding 0.3s;
         }
         @media (min-width: 480px) {
-            .timeline-container {
-                padding: 2.2rem 1.5rem;
-                border-radius: 32px;
-            }
+            .timeline-container { padding: 2.2rem 1.5rem; border-radius: 32px; }
         }
-        .dots-grid { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 10px 8px; 
-            justify-content: center; 
-            margin-bottom: 1.2rem; 
+        .dots-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 8px;
+            justify-content: center;
+            margin-bottom: 1.2rem;
         }
         @media (min-width: 480px) {
-            .dots-grid {
-                gap: 14px 12px;
-                margin-bottom: 1.5rem;
-            }
+            .dots-grid { gap: 14px 12px; margin-bottom: 1.5rem; }
         }
         .dot-wrapper { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .day-dot {
-            width: 22px; 
-            height: 22px; 
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            background-color: var(--dot-empty); 
+            background-color: var(--dot-empty);
             border: 2px solid transparent;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer; 
+            cursor: pointer;
             user-select: none;
         }
         @media (min-width: 480px) {
-            .day-dot {
-                width: 26px;
-                height: 26px;
-            }
+            .day-dot { width: 26px; height: 26px; }
         }
         .day-dot:hover { transform: scale(1.2); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .day-dot.passed { background-color: var(--accent-gold); box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); }
         .day-dot.today {
-            background-color: var(--accent-soft); animation: dot-sparkle 2s infinite ease-in-out;
-            box-shadow: 0 0 12px var(--accent-soft); z-index: 2;
+            background-color: var(--accent-soft);
+            animation: dot-sparkle 2s infinite ease-in-out;
+            box-shadow: 0 0 12px var(--accent-soft);
+            z-index: 2;
+        }
+        @keyframes dot-sparkle {
+            0%, 100% { box-shadow: 0 0 12px var(--accent-soft); }
+            50% { box-shadow: 0 0 20px var(--accent-soft), 0 0 30px rgba(232, 167, 161, 0.3); }
         }
         .dot-number { font-size: 0.6rem; font-weight: 600; color: var(--text-muted); }
         @media (min-width: 480px) {
-            .dot-number {
-                font-size: 0.65rem;
-            }
+            .dot-number { font-size: 0.65rem; }
         }
-        .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem; padding: 0 4px; }
+        .timeline-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.5rem;
+            padding: 0 4px;
+        }
 
         /* LAAG 4: Micro-Dagboek */
         .day-note-display {
-            width: 100%; max-width: 450px; background: rgba(255, 255, 255, 0.7);
-            border: 1px dashed rgba(0,0,0,0.08); padding: 1.2rem; border-radius: 20px;
-            font-size: 0.88rem; text-align: center; color: var(--text-main);
-            transition: all 0.3s ease; opacity: 0; transform: translateY(5px); margin-bottom: 2rem;
+            width: 100%;
+            max-width: 450px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px dashed rgba(0,0,0,0.08);
+            padding: 1.2rem;
+            border-radius: 20px;
+            font-size: 0.88rem;
+            text-align: center;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(5px);
+            margin-bottom: 2rem;
         }
         .day-note-display.show { opacity: 1; transform: translateY(0); }
-        .day-note-display .note-date { font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px; font-size: 0.75rem; text-transform: uppercase; }
+        .day-note-display .note-date {
+            font-weight: 700;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
 
-        /* MODAL POPUPS */
+        /* =============================================
+           MODAL — VOLLEDIG SCHERM OP MOBIEL
+           FIX: Gebruik 100dvh zodat het boven het
+           iOS toetsenbord uit kan schuiven.
+        ============================================= */
         .modal {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(248, 249, 250, 0.98);
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none;
-            transition: opacity 0.3s ease; z-index: 10000; 
-            padding: 0.5rem;
+            display: flex;
+            align-items: flex-end;       /* Op mobiel: slide-up van onderaf */
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10000;
+            padding: 0;
         }
         @media (min-width: 480px) {
             .modal {
+                align-items: center;
                 padding: 1.5rem;
+                background: rgba(248, 249, 250, 0.95);
             }
         }
         .modal.open { opacity: 1; pointer-events: auto; }
-        
+
         .modal-content {
-            background: var(--card-bg); 
-            width: 100%; 
+            background: var(--card-bg);
+            width: 100%;
             max-width: 480px;
-            padding: 1.5rem 1.2rem; 
-            border-radius: 24px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0,0,0,0.02); 
-            max-height: 95vh; 
+            /* FIX: Volledige schermhoogte op mobiel, met safe-area voor home-balk */
+            height: 100dvh;
+            max-height: 100dvh;
+            padding: 1.2rem 1.2rem calc(1.2rem + env(safe-area-inset-bottom));
+            border-radius: 0;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.08);
+            border: none;
             overflow-y: auto;
-            display: flex; 
-            flex-direction: column; 
-            gap: 1rem; 
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
             position: relative;
-            transition: padding 0.3s;
+            transition: none;
         }
         @media (min-width: 480px) {
             .modal-content {
+                height: auto;
+                max-height: 90vh;
                 padding: 2.2rem 2rem;
                 border-radius: 32px;
-                max-height: 90vh;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+                border: 1px solid rgba(0,0,0,0.02);
+                gap: 1rem;
             }
         }
-        
-        .game-admin-toggle-btn {
-            position: absolute; top: 1.5rem; right: 1.2rem;
-            background: none; border: none; font-size: 1.3rem;
-            cursor: pointer; padding: 4px; transition: transform 0.3s ease;
+
+        /* Padding-top op mobiel om ruimte te geven voor de close-knop */
+        .modal-content .modal-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: env(safe-area-inset-top);
+            margin-bottom: 0.25rem;
+            flex-shrink: 0;
         }
         @media (min-width: 480px) {
-            .game-admin-toggle-btn {
-                top: 2rem;
-                right: 2rem;
-            }
+            .modal-content .modal-top-bar { display: none; }
+        }
+
+        .modal-drag-handle {
+            width: 36px;
+            height: 4px;
+            background: rgba(0,0,0,0.12);
+            border-radius: 2px;
+            margin: 0 auto 0.5rem;
+            flex-shrink: 0;
+        }
+        @media (min-width: 480px) {
+            .modal-drag-handle { display: none; }
+        }
+
+        .game-admin-toggle-btn {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 8px;
+            transition: transform 0.3s ease;
+            line-height: 1;
         }
         .game-admin-toggle-btn:hover { transform: rotate(45deg); }
 
+        .modal-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .modal-title-row h2 {
+            text-align: center;
+            font-weight: 500;
+        }
+        .modal-title-row .game-admin-toggle-btn {
+            position: absolute;
+            right: 0;
+        }
+
         .game-turn-banner {
-            background: var(--bg-color); padding: 0.6rem; border-radius: 12px;
-            text-align: center; font-size: 0.9rem; font-weight: 600;
-            border: 1px solid rgba(0,0,0,0.02); margin-top: 0.5rem;
+            background: var(--bg-color);
+            padding: 0.6rem;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 1px solid rgba(0,0,0,0.02);
+            flex-shrink: 0;
         }
         .game-turn-banner.your-turn { background: #e3f2fd; color: #0d47a1; border-color: #bbdefb; }
         .game-turn-banner.waiting-turn { background: #fff3e0; color: #e65100; border-color: #ffe0b2; }
 
         .story-turns-countdown {
-            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;
-            color: var(--text-muted); font-weight: 700; text-align: center;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-align: center;
+            flex-shrink: 0;
         }
 
-        /* TEXT BOX (Boek lay-out) */
+        /* =============================================
+           VERHAAL DISPLAY BOX
+           FIX: flex: 1 zodat het vak de beschikbare
+           hoogte in de modal opvult.
+           FIX: Betere typografie (grotere font-size,
+           ruimere line-height).
+        ============================================= */
         .story-display-box {
-            background: var(--bg-color); 
-            padding: 1.2rem; 
+            background: var(--bg-color);
+            padding: 1.2rem;
             border-radius: 18px;
-            min-height: 180px; 
-            max-height: 260px; 
+            /* FIX: flex:1 vult de beschikbare ruimte */
+            flex: 1;
+            min-height: 0;         /* noodzakelijk voor flex overflow */
             overflow-y: auto;
-            /* Klassieke Serif/Boek typografie */
+            /* FIX: Betere serif typografie voor mobiel */
             font-family: "Georgia", "Merriweather", "Baskerville", serif;
             font-size: 1.1rem;
-            line-height: 1.7;
+            line-height: 1.9;      /* was 1.7 — meer lucht tussen regels */
             color: var(--text-main);
             border: 1px solid rgba(0, 0, 0, 0.03);
             text-align: left;
             box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.02);
-            transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease, padding 0.3s, min-height 0.3s, max-height 0.3s;
+            transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+            /* Zachte padding aan onderkant voor leescomfort */
+            padding-bottom: 1.5rem;
+            -webkit-overflow-scrolling: touch;
         }
         @media (min-width: 480px) {
             .story-display-box {
                 padding: 2rem;
+                padding-bottom: 2rem;
+                font-size: 1.15rem;
+                line-height: 1.9;
+                border-radius: 24px;
+                /* Op desktop: vaste hoogte i.p.v. flex */
+                flex: none;
                 min-height: 280px;
                 max-height: 400px;
-                font-size: 1.15rem;
-                line-height: 1.8;
-                border-radius: 24px;
             }
         }
 
-        /* Dynamische sfeergloed op basis van de actieve beurt */
         .story-display-box.turn-maggie {
             background-color: rgba(219, 125, 117, 0.04);
             border-color: rgba(219, 125, 117, 0.15);
             box-shadow: inset 0 2px 8px rgba(219, 125, 117, 0.02), 0 0 15px rgba(219, 125, 117, 0.05);
         }
-
         .story-display-box.turn-kaman {
             background-color: rgba(74, 124, 133, 0.04);
             border-color: rgba(74, 124, 133, 0.15);
             box-shadow: inset 0 2px 8px rgba(74, 124, 133, 0.02), 0 0 15px rgba(74, 124, 133, 0.05);
         }
-
         .story-display-box.turn-finished {
             background-color: rgba(212, 175, 55, 0.03);
             border-color: rgba(212, 175, 55, 0.2);
             box-shadow: inset 0 2px 8px rgba(212, 175, 55, 0.01), 0 0 20px rgba(212, 175, 55, 0.08);
         }
-        
+
         .story-paragraph {
             display: inline-block;
             width: 100%;
             word-wrap: break-word;
         }
-        
-        .story-segment {
-            display: inline;
-            white-space: normal;
-        }
-        .story-segment.maggie {
-            color: var(--color-maggie);
-        }
-        .story-segment.kaman {
-            color: var(--color-kaman);
-        }
+        .story-segment { display: inline; white-space: normal; }
+        .story-segment.maggie { color: var(--color-maggie); }
+        .story-segment.kaman { color: var(--color-kaman); }
 
-        /* GEAVANCEERDE MORPH TRANSITIONS VOOR ALFANUMERIEKE LETTERS */
+        /* Morph char animaties */
         .morph-char {
             position: relative;
             display: inline-block;
             vertical-align: baseline;
         }
-
         .morph-char .raw-char {
             display: inline-block;
             transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), filter 0.8s, transform 0.8s;
             opacity: 1;
             transform: scale(1);
         }
-
         .morph-char .hash-char {
             position: absolute;
-            left: 0;
-            top: 0;
+            left: 0; top: 0;
             display: inline-block;
             transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), filter 0.8s, transform 0.8s;
             opacity: 0;
@@ -540,94 +603,116 @@
             letter-spacing: 0.15em;
             font-weight: 600;
         }
-
-        /* Actieve maskering na de render/transitie */
         .morph-char.is-masked .raw-char {
             opacity: 0;
             transform: scale(0.3) rotate(-45deg);
             filter: blur(2px);
             pointer-events: none;
         }
-
         .morph-char.is-masked .hash-char {
             opacity: 0.65;
             transform: scale(1) rotate(0deg);
             filter: blur(0px);
         }
 
+        /* =============================================
+           INPUT SECTIE
+           FIX: sticky onderkant zodat de knop
+           altijd zichtbaar blijft boven toetsenbord.
+           FIX: safe-area-inset-bottom toegevoegd.
+        ============================================= */
+        #gameInputSection {
+            flex-shrink: 0;
+            /* Op mobiel: plakken aan de onderkant van de flex-kolom */
+        }
+
         .word-counter-wrapper {
-            display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);
-            margin-top: -4px; padding: 0 4px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            padding: 0 4px;
         }
         .word-counter-wrapper.over-limit { color: var(--danger-color); font-weight: bold; }
 
         .form-group { margin-bottom: 0.75rem; }
         @media (min-width: 480px) {
-            .form-group {
-                margin-bottom: 1rem;
-            }
+            .form-group { margin-bottom: 1rem; }
         }
-        .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; }
-        
-        /* 16px font-size voorkomt dat iOS Safari inzoomt op klik */
-        .form-group input, .form-group textarea, .form-group select { 
-            width: 100%; 
-            padding: 0.8rem; 
-            background: var(--bg-color); 
-            border: 1px solid rgba(0, 0, 0, 0.05); 
-            border-radius: 14px; 
-            color: var(--text-main); 
-            font-size: 16px !important; 
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
         }
-        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--bg-color);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 16px !important;  /* Voorkomt iOS-zoom bij klik */
+        }
+
+        /* FIX: textarea hoogte verhoogd van 70px naar 90px */
         #gameTextInput {
-            height: 70px;
+            height: 90px;
             resize: none;
-            transition: height 0.3s;
         }
         @media (min-width: 480px) {
-            #gameTextInput {
-                height: 100px;
-            }
+            #gameTextInput { height: 100px; }
         }
-        
+
         .admin-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
         @media (min-width: 480px) {
-            .admin-actions {
-                margin-top: 1.2rem;
-            }
+            .admin-actions { margin-top: 1.2rem; }
         }
-        .btn-action { 
-            width: 100%; 
-            padding: 0.8rem; 
-            border: none; 
-            border-radius: 14px; 
-            font-weight: 600; 
+        .btn-action {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 14px;
+            font-weight: 600;
             font-size: 0.95rem;
-            cursor: pointer; 
-            min-height: 44px; /* Goede mobiele touch target size */
+            cursor: pointer;
+            min-height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         @media (min-width: 480px) {
-            .btn-action {
-                padding: 0.9rem;
-                font-size: 1rem;
-            }
+            .btn-action { padding: 0.9rem; font-size: 1rem; }
         }
         .btn-save { background: var(--text-main); color: #fff; }
         .btn-cancel { background: #e9ecef; color: var(--text-main); }
         .btn-danger { background: var(--danger-color); color: #fff; }
 
+        /* FIX: admin trigger verplaatst naar hartje (5x klikken),
+           dit blok wordt niet meer gebruikt maar gelaten voor
+           eventuele fallback */
         .invisible-admin-trigger {
-            position: absolute; top: 0; left: 0; width: 60px; height: 60px; cursor: default; z-index: 99999;
+            display: none;
+        }
+
+        /* Game wait/info sectie */
+        #gameWaitSection {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        /* Sluit-knop op mobiel altijd onderaan, met safe-area */
+        #closeGameBtn {
+            flex-shrink: 0;
+            margin-bottom: 0;
         }
     </style>
 </head>
 <body>
-
-    <div class="invisible-admin-trigger" id="mainAdminTrigger"></div>
 
     <!-- LAAG 1: TIMERS -->
     <div class="main-display" id="clickableCounter">
@@ -642,7 +727,7 @@
             <div class="alternative-stats-display" id="alternativeStatsContent">Laden... 🤔</div>
         </div>
     </div>
-    
+
     <div class="badges-wrapper">
         <div class="badge-btn" style="cursor: default;">Nog <span id="totalHours">0</span> uur</div>
         <div class="badge-btn" id="openGameBtn">📖 Ons Verhaal</div>
@@ -654,11 +739,12 @@
     <div class="couple-header">
         <div class="speech-bubble" id="bubble-left"></div>
         <div class="speech-bubble" id="bubble-right"></div>
-         
+
         <div class="couple-avatars">
             <div class="top-avatar-container">
                 <img src="m.jpg" alt="Maggie" class="top-avatar" id="avatar-left">
             </div>
+            <!-- FIX: hartje heeft nu een click-handler voor snel kloppen + verborgen 5x admin trigger -->
             <div class="beating-heart" id="mainHeartIcon">❤</div>
             <div class="top-avatar-container">
                 <img src="k.jpg" alt="Kaman" class="top-avatar" id="avatar-right">
@@ -684,6 +770,7 @@
     <!-- MAIN APP ADMIN MODAL -->
     <div class="modal" id="mainAdminModal">
         <div class="modal-content">
+            <div class="modal-drag-handle"></div>
             <h2 style="text-align: center; font-weight: 500; color: var(--accent-gold);">⚙️ Algemene Instellingen</h2>
             <div class="form-group"><label>Vertrekdatum</label><input type="datetime-local" id="inputStart"></div>
             <div class="form-group"><label>Terugkomstdatum</label><input type="datetime-local" id="inputEnd"></div>
@@ -701,13 +788,23 @@
     <!-- GAME POPUP MODAL -->
     <div class="modal" id="gameModal">
         <div class="modal-content">
-            <button class="game-admin-toggle-btn" id="gameAdminToggleBtn">⚙️</button>
-            <h2 style="text-align: center; font-weight: 500; padding-right: 2rem;" id="gameTitle">📖 Kettingverhaal</h2>
-            
+            <!-- Mobiel: drag handle + sluit knop rechtsboven -->
+            <div class="modal-drag-handle"></div>
+            <div class="modal-top-bar">
+                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Ons Verhaal</span>
+                <button class="btn-action btn-cancel" id="closeGameBtnTop" style="width: auto; padding: 0.4rem 0.9rem; font-size: 0.85rem; min-height: 36px;">Sluiten</button>
+            </div>
+
+            <!-- Desktop: titel met tandwiel -->
+            <div class="modal-title-row" style="display: none;" id="desktopTitleRow">
+                <h2 style="font-weight: 500;" id="gameTitle">📖 Kettingverhaal</h2>
+                <button class="game-admin-toggle-btn" id="gameAdminToggleBtn">⚙️</button>
+            </div>
+
             <div class="game-turn-banner" id="gameTurnBanner">Laden... 🤔</div>
             <div class="story-turns-countdown" id="storyTurnsCountdown">Ronde -- / --</div>
 
-            <!-- HET VERHAAL DISPLAY VAK (DOORLOPEND, MET NIEUWE CLASSES) -->
+            <!-- HET VERHAAL DISPLAY VAK -->
             <div class="story-display-box" id="storyDisplayBox">Laden...</div>
 
             <div id="gameInputSection" style="display: none;">
@@ -721,20 +818,21 @@
                 </div>
                 <button class="btn-action btn-save" id="submitTurnBtn">Verstuur beurt 🐸</button>
             </div>
-            
-            <div id="gameWaitSection" style="text-align: center; color: var(--text-muted); padding: 1rem; display: none;"></div>
+
+            <div id="gameWaitSection" style="display: none;"></div>
+
+            <!-- Sluiten-knop onderaan (mobiel: altijd zichtbaar, desktop verborgen want bovenaan) -->
             <button class="btn-action btn-cancel" id="closeGameBtn">Sluiten</button>
 
             <!-- GAME RULES ADMIN PANEL -->
-            <div id="gameAdminSection" style="display: none; border-top: 2px dashed rgba(0,0,0,0.08); padding-top: 1rem; margin-top: 1rem;">
+            <div id="gameAdminSection" style="display: none; border-top: 2px dashed rgba(0,0,0,0.08); padding-top: 1rem; margin-top: 0.5rem;">
                 <h3 style="font-size: 1rem; margin-bottom: 0.8rem; color: var(--accent-gold);">🎮 Spelregels Aanpassen</h3>
                 <div class="form-group"><label>Woordlimiet per beurt</label><input type="number" id="inputWordLimit" min="1" max="100"></div>
                 <div class="form-group"><label>Totaal Aantal Rondes</label><input type="number" id="inputMaxTurns" min="1" max="100"></div>
                 <div class="form-group">
-                    <label>Aantal zichtbare woorden van vorige beurt (-1 voor heel het verhaal)</label>
+                    <label>Zichtbare woorden vorige beurt (-1 = heel verhaal)</label>
                     <input type="number" id="inputVisibilityWords" min="-1" max="100" placeholder="Bijv. 5 of 10">
                 </div>
-                
                 <div class="admin-actions">
                     <button class="btn-action btn-danger" id="btnResetGame">Reset Verhaal 🗑️</button>
                     <button class="btn-action btn-save" id="saveGameAdminBtn">Opslaan 💾</button>
@@ -745,7 +843,7 @@
 
     <script>
         // === 1. INITIALISATIE & SUPABASE ===
-        const SUPABASE_URL = "https://ychmiiyefzmcsikmxnyy.supabase.co"; 
+        const SUPABASE_URL = "https://ychmiiyefzmcsikmxnyy.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljaG1paXllZnptY3Npa214bnl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzNjIyNTQsImV4cCI6MjA5OTkzODI1NH0.nMZHGGv7MOFzIvhXKChcQMG5nbT50odoz6x7Z4XT3e0";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -753,24 +851,45 @@
         const currentUser = urlParams.get('user') === 'maggie' ? 'maggie' : (urlParams.get('user') === 'kaman' ? 'kaman' : 'viewer');
 
         let startDateStr = "2026-07-16T09:00"; let endDateStr = "2026-08-30T18:00";
-        let quotesLeft = []; let quotesRight = []; let dailyNotes = {}; 
+        let quotesLeft = []; let quotesRight = []; let dailyNotes = {};
 
-        let gameWordLimit = 10; 
-        let gameMaxRounds = 10; 
-        let gameVisibility = "all"; 
+        let gameWordLimit = 10;
+        let gameMaxRounds = 10;
+        let gameVisibility = "all";
         let gameCurrentTurn = "maggie"; let gameStoryLines = []; let gameStatus = "active";
-        
+
         function getLocalDateString(dateObj = new Date()) {
             const offset = dateObj.getTimezoneOffset();
             return new Date(dateObj.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
         }
 
         let lastCheckedDayStr = null; let spontaneousQuoteTimer = null;
-        let mainAdminClickCount = 0; let mainAdminClickTimer = null;
 
         function triggerConfetti() {
             confetti({ particleCount: 140, spread: 70, origin: { y: 0.6 }, colors: ['#d4af37', '#e8a7a1', '#ffffff', '#f4d068'] });
         }
+
+        // === FIX: HARTJE — SNEL KLOPPEN + VERBORGEN ADMIN TRIGGER (5 KLIKKEN) ===
+        let heartClickCount = 0;
+        let heartClickTimer = null;
+        const heartEl = document.getElementById('mainHeartIcon');
+
+        heartEl.addEventListener('click', () => {
+            // Snel kloppen effect
+            heartEl.classList.add('fast');
+            clearTimeout(heartEl._fastTimer);
+            heartEl._fastTimer = setTimeout(() => heartEl.classList.remove('fast'), 2000);
+
+            // Verborgen admin trigger: 5x klikken
+            heartClickCount++;
+            clearTimeout(heartClickTimer);
+            if (heartClickCount >= 5) {
+                heartClickCount = 0;
+                document.getElementById('mainAdminModal').classList.add('open');
+            } else {
+                heartClickTimer = setTimeout(() => { heartClickCount = 0; }, 2000);
+            }
+        });
 
         // === 2. DATA CONFIGURATIE EN REALTIME SYNC ===
         async function loadSharedDates() {
@@ -780,22 +899,22 @@
 
                 if (data) {
                     startDateStr = data.start_date; endDateStr = data.end_date;
-                    dailyNotes = data.daily_notes || {}; 
-                    
+                    dailyNotes = data.daily_notes || {};
+
                     document.getElementById('inputStart').value = startDateStr;
                     document.getElementById('inputEnd').value = endDateStr;
-                    
-                    if(data.quotes_her) {
+
+                    if (data.quotes_her) {
                         quotesLeft = data.quotes_her.split('|').map(s => s.trim()).filter(s => s.length > 0);
                         document.getElementById('inputQuotesHer').value = data.quotes_her;
                     }
-                    if(data.quotes_him) {
+                    if (data.quotes_him) {
                         quotesRight = data.quotes_him.split('|').map(s => s.trim()).filter(s => s.length > 0);
                         document.getElementById('inputQuotesHim').value = data.quotes_him;
                     }
 
                     gameWordLimit = data.game_word_limit || 10;
-                    gameMaxRounds = data.game_max_turns || 10; 
+                    gameMaxRounds = data.game_max_turns || 10;
                     gameVisibility = data.game_visibility || "all";
                     gameCurrentTurn = data.game_current_turn || "maggie";
                     gameStoryLines = data.game_story_lines || [];
@@ -803,17 +922,17 @@
 
                     document.getElementById('inputWordLimit').value = gameWordLimit;
                     document.getElementById('inputMaxTurns').value = gameMaxRounds;
-                    
+
                     if (gameVisibility === 'all' || gameVisibility === '-1') {
                         document.getElementById('inputVisibilityWords').value = "-1";
                     } else if (gameVisibility.startsWith('words_')) {
                         document.getElementById('inputVisibilityWords').value = gameVisibility.split('_')[1];
                     } else {
-                        document.getElementById('inputVisibilityWords').value = gameVisibility; 
+                        document.getElementById('inputVisibilityWords').value = gameVisibility;
                     }
 
-                    setupDotsGrid(); populateDaySelector(); updateCountdown(); autoSelectToday(); updateGameUI(false);
-                    updateMainBadgeIndicator();
+                    setupDotsGrid(); populateDaySelector(); updateCountdown(); autoSelectToday();
+                    updateGameUI(false); updateMainBadgeIndicator();
                 }
             } catch (err) {
                 console.error("Fout bij inladen data:", err);
@@ -827,10 +946,10 @@
                 const oldTurn = gameCurrentTurn;
                 startDateStr = payload.new.start_date; endDateStr = payload.new.end_date;
                 dailyNotes = payload.new.daily_notes || {};
-                
-                if(payload.new.quotes_her) quotesLeft = payload.new.quotes_her.split('|').map(s => s.trim()).filter(s => s.length > 0);
-                if(payload.new.quotes_him) quotesRight = payload.new.quotes_him.split('|').map(s => s.trim()).filter(s => s.length > 0);
-                 
+
+                if (payload.new.quotes_her) quotesLeft = payload.new.quotes_her.split('|').map(s => s.trim()).filter(s => s.length > 0);
+                if (payload.new.quotes_him) quotesRight = payload.new.quotes_him.split('|').map(s => s.trim()).filter(s => s.length > 0);
+
                 gameWordLimit = payload.new.game_word_limit || 10;
                 gameMaxRounds = payload.new.game_max_turns || 10;
                 gameVisibility = payload.new.game_visibility || "all";
@@ -845,15 +964,7 @@
             })
             .subscribe();
 
-        // === 3. MAIN APP 3-KLIK TRIGGER ===
-        document.getElementById('mainAdminTrigger').addEventListener('click', () => {
-            mainAdminClickCount++; clearTimeout(mainAdminClickTimer);
-            if (mainAdminClickCount === 3) {
-                mainAdminClickCount = 0; document.getElementById('mainAdminModal').classList.add('open');
-            } else {
-                mainAdminClickTimer = setTimeout(() => { mainAdminClickCount = 0; }, 1000);
-            }
-        });
+        // === 3. MODALS ===
         document.getElementById('closeMainAdminBtn').addEventListener('click', () => {
             document.getElementById('mainAdminModal').classList.remove('open');
         });
@@ -862,9 +973,9 @@
         function updateMainBadgeIndicator() {
             const badge = document.getElementById('openGameBtn');
             if (!badge) return;
-            
+
             badge.classList.remove('my-turn', 'their-turn', 'completed-turn');
-            
+
             if (gameStatus === 'finished') {
                 badge.innerText = "📕 Verhaal voltooid";
                 badge.classList.add('completed-turn');
@@ -884,14 +995,15 @@
             const bubble = document.getElementById(isLeft ? 'bubble-left' : 'bubble-right');
             const avatar = document.getElementById(isLeft ? 'avatar-left' : 'avatar-right');
             const quotes = isLeft ? quotesLeft : quotesRight;
-            if(!bubble || !avatar || !quotes || quotes.length === 0) return;
+            if (!bubble || !avatar || !quotes || quotes.length === 0) return;
             clearTimeout(spontaneousQuoteTimer);
             bubble.innerText = quotes[Math.floor(Math.random() * quotes.length)];
             bubble.classList.add('show');
             avatar.style.transform = `scale(1.1) rotate(${isLeft ? "-5deg" : "5deg"})`;
             setTimeout(() => {
-                bubble.classList.remove('show'); avatar.style.transform = "scale(1) rotate(0deg)";
-                startSpontaneousQuoteCycle(); 
+                bubble.classList.remove('show');
+                avatar.style.transform = "scale(1) rotate(0deg)";
+                startSpontaneousQuoteCycle();
             }, 4000);
         }
         function startSpontaneousQuoteCycle() {
@@ -912,37 +1024,53 @@
         clickableCounter.addEventListener('click', () => {
             showAlternativeStats = !showAlternativeStats; clearTimeout(statsResetTimer);
             if (showAlternativeStats) {
-                const now = new Date(); const totalTime = new Date(endDateStr).getTime() - new Date(startDateStr).getTime();
-                const timeRemaining = new Date(endDateStr).getTime() - now.getTime(); const timePassed = totalTime - timeRemaining;
+                const now = new Date();
+                const totalTime = new Date(endDateStr).getTime() - new Date(startDateStr).getTime();
+                const timeRemaining = new Date(endDateStr).getTime() - now.getTime();
+                const timePassed = totalTime - timeRemaining;
                 if (timeRemaining > 0) {
-                    const totalSeconds = Math.floor(timeRemaining / 1000); const totalMinutes = Math.floor(timeRemaining / (1000 * 60));
-                    const totalNights = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24)); const percentagePassed = Math.min(100, Math.max(0, (timePassed / totalTime) * 100)).toFixed(1);
+                    const totalSeconds = Math.floor(timeRemaining / 1000);
+                    const totalMinutes = Math.floor(timeRemaining / (1000 * 60));
+                    const totalNights = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+                    const percentagePassed = Math.min(100, Math.max(0, (timePassed / totalTime) * 100)).toFixed(1);
                     const statsOptions = [
                         `Dat zijn nog precies <strong>${totalSeconds.toLocaleString('nl-NL')}</strong> seconden wachten! ⏱️`,
                         `Nog maar <strong>${totalNights}</strong> nachtjes slapen en dan zijn we weer samen! 😴`,
                         `Al <strong>${percentagePassed}%</strong> van de totale tijd is al voorbij! We overleven dit! 💪`,
                         `Dat is nog maar <strong>${totalMinutes.toLocaleString('nl-NL')}</strong> minuutjes geduld hebben! 💋`
                     ];
-                    statsContent.innerHTML = statsOptions[currentStatIndex]; currentStatIndex = (currentStatIndex + 1) % statsOptions.length;
-                } else { statsContent.innerHTML = "We zijn eindelijk weer samen! ❤️"; }
+                    statsContent.innerHTML = statsOptions[currentStatIndex];
+                    currentStatIndex = (currentStatIndex + 1) % statsOptions.length;
+                } else {
+                    statsContent.innerHTML = "We zijn eindelijk weer samen! ❤️";
+                }
                 normalView.style.display = 'none'; alternativeView.style.display = 'block';
-                statsResetTimer = setTimeout(() => { showAlternativeStats = false; alternativeView.style.display = 'none'; normalView.style.display = 'block'; }, 5000);
-            } else { alternativeView.style.display = 'none'; normalView.style.display = 'block'; }
+                statsResetTimer = setTimeout(() => {
+                    showAlternativeStats = false;
+                    alternativeView.style.display = 'none';
+                    normalView.style.display = 'block';
+                }, 5000);
+            } else {
+                alternativeView.style.display = 'none'; normalView.style.display = 'block';
+            }
         });
 
         // === 6. TIJDSLIJN GRID ===
         function setupDotsGrid() {
-            const start = new Date(startDateStr); start.setHours(0,0,0,0);
-            const end = new Date(endDateStr); end.setHours(0,0,0,0);
-            const totalDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1; 
-            const gridContainer = document.getElementById('dotsGrid'); if(!gridContainer) return;
+            const start = new Date(startDateStr); start.setHours(0, 0, 0, 0);
+            const end = new Date(endDateStr); end.setHours(0, 0, 0, 0);
+            const totalDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
+            const gridContainer = document.getElementById('dotsGrid');
+            if (!gridContainer) return;
             gridContainer.innerHTML = '';
             for (let i = 0; i < totalDays; i++) {
                 const wrapper = document.createElement('div'); wrapper.className = 'dot-wrapper';
                 const dot = document.createElement('div'); dot.className = 'day-dot';
                 const dotDate = new Date(start); dotDate.setDate(start.getDate() + i);
                 const dateIsoStr = getLocalDateString(dotDate);
-                dot.setAttribute('data-date', dateIsoStr); dot.setAttribute('data-readable', formatDateLabel(dotDate)); dot.setAttribute('data-index', i + 1);
+                dot.setAttribute('data-date', dateIsoStr);
+                dot.setAttribute('data-readable', formatDateLabel(dotDate));
+                dot.setAttribute('data-index', i + 1);
                 dot.addEventListener('click', () => {
                     showMicroDiary(dateIsoStr, dot.getAttribute('data-readable'), i + 1);
                     if (dot.classList.contains('passed') || dot.classList.contains('today')) triggerConfetti();
@@ -955,49 +1083,78 @@
         }
 
         function formatDateLabel(dateInput) {
-            const d = new Date(dateInput); const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+            const d = new Date(dateInput);
+            const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
             return d.getDate() + ' ' + months[d.getMonth()];
         }
 
         function showMicroDiary(dateIso, readableDate, dayNumber) {
-            const displayBox = document.getElementById('dayNoteDisplay'); const titleNode = document.getElementById('noteDateTitle'); const contentNode = document.getElementById('noteTextContent');
-            const todayStr = getLocalDateString(); let statusSuffix = "";
-            if(dateIso < todayStr) statusSuffix = " (Voltooid ✨)"; else if(dateIso === todayStr) statusSuffix = " (Vandaag ⏱️)";
-            titleNode.innerText = `Dag ${dayNumber} - ${readableDate}${statusSuffix}`; contentNode.innerText = dailyNotes[dateIso] || "Nog geen speciale herinnering opgeschreven voor deze dag. ❤️";
+            const displayBox = document.getElementById('dayNoteDisplay');
+            const titleNode = document.getElementById('noteDateTitle');
+            const contentNode = document.getElementById('noteTextContent');
+            const todayStr = getLocalDateString();
+            let statusSuffix = "";
+            if (dateIso < todayStr) statusSuffix = " (Voltooid ✨)";
+            else if (dateIso === todayStr) statusSuffix = " (Vandaag ⏱️)";
+            titleNode.innerText = `Dag ${dayNumber} - ${readableDate}${statusSuffix}`;
+            contentNode.innerText = dailyNotes[dateIso] || "Nog geen speciale herinnering opgeschreven voor deze dag. ❤️";
             displayBox.classList.add('show');
         }
 
         function autoSelectToday() {
-            const todayStr = getLocalDateString(); const todayDot = document.querySelector(`.day-dot[data-date="${todayStr}"]`);
+            const todayStr = getLocalDateString();
+            const todayDot = document.querySelector(`.day-dot[data-date="${todayStr}"]`);
             if (todayDot) showMicroDiary(todayStr, todayDot.getAttribute('data-readable'), todayDot.getAttribute('data-index'));
             else { const firstDot = document.querySelector('.day-dot'); if (firstDot) showMicroDiary(firstDot.getAttribute('data-date'), firstDot.getAttribute('data-readable'), 1); }
         }
 
         function populateDaySelector() {
-            const select = document.getElementById('selectNoteDay'); if(!select) return;
+            const select = document.getElementById('selectNoteDay');
+            if (!select) return;
             select.innerHTML = '<option value="">-- Kies een dag --</option>';
-            const start = new Date(startDateStr); start.setHours(0,0,0,0); const end = new Date(endDateStr); end.setHours(0,0,0,0);
+            const start = new Date(startDateStr); start.setHours(0, 0, 0, 0);
+            const end = new Date(endDateStr); end.setHours(0, 0, 0, 0);
             const totalDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
-            for(let i=0; i<totalDays; i++) {
-                const d = new Date(start); d.setDate(start.getDate() + i); const iso = getLocalDateString(d);
-                const opt = document.createElement('option'); opt.value = iso; opt.innerText = `Dag ${i + 1} (${formatDateLabel(d)})`;
+            for (let i = 0; i < totalDays; i++) {
+                const d = new Date(start); d.setDate(start.getDate() + i);
+                const iso = getLocalDateString(d);
+                const opt = document.createElement('option');
+                opt.value = iso;
+                opt.innerText = `Dag ${i + 1} (${formatDateLabel(d)})`;
                 select.appendChild(opt);
             }
         }
-        document.getElementById('selectNoteDay').addEventListener('change', (e) => { document.getElementById('inputDayNote').value = dailyNotes[e.target.value] || ""; });
+        document.getElementById('selectNoteDay').addEventListener('change', (e) => {
+            document.getElementById('inputDayNote').value = dailyNotes[e.target.value] || "";
+        });
 
         function updateCountdown() {
-            const now = new Date(); const timeRemaining = new Date(endDateStr).getTime() - now.getTime(); const todayStr = getLocalDateString(now);
+            const now = new Date();
+            const timeRemaining = new Date(endDateStr).getTime() - now.getTime();
+            const todayStr = getLocalDateString(now);
             if (lastCheckedDayStr && todayStr !== lastCheckedDayStr) { triggerConfetti(); autoSelectToday(); }
             lastCheckedDayStr = todayStr;
             document.querySelectorAll('.day-dot').forEach(dot => {
-                const dotDateStr = dot.getAttribute('data-date'); dot.classList.remove('passed', 'today');
-                if (dotDateStr < todayStr) dot.classList.add('passed'); else if (dotDateStr === todayStr) dot.classList.add('today');
+                const dotDateStr = dot.getAttribute('data-date');
+                dot.classList.remove('passed', 'today');
+                if (dotDateStr < todayStr) dot.classList.add('passed');
+                else if (dotDateStr === todayStr) dot.classList.add('today');
             });
-            if (timeRemaining <= 0) { document.getElementById('clickableCounter').style.display = 'none'; document.getElementById('completedMessage').style.display = 'block'; return; }
-            if (!showAlternativeStats) { document.getElementById('clickableCounter').style.display = 'block'; document.getElementById('completedMessage').style.display = 'none'; }
-            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24)); const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-            document.getElementById('days').innerText = days < 10 ? "0" + days : days; document.getElementById('hours').innerText = hours < 10 ? "0" + hours : hours; document.getElementById('minutes').innerText = minutes < 10 ? "0" + minutes : minutes;
+            if (timeRemaining <= 0) {
+                document.getElementById('clickableCounter').style.display = 'none';
+                document.getElementById('completedMessage').style.display = 'block';
+                return;
+            }
+            if (!showAlternativeStats) {
+                document.getElementById('clickableCounter').style.display = 'block';
+                document.getElementById('completedMessage').style.display = 'none';
+            }
+            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+            document.getElementById('days').innerText = days < 10 ? "0" + days : days;
+            document.getElementById('hours').innerText = hours < 10 ? "0" + hours : hours;
+            document.getElementById('minutes').innerText = minutes < 10 ? "0" + minutes : minutes;
             document.getElementById('totalHours').innerText = Math.floor(timeRemaining / (1000 * 60 * 60));
         }
 
@@ -1006,27 +1163,15 @@
             const fragment = document.createDocumentFragment();
             for (let i = 0; i < wordText.length; i++) {
                 const char = wordText[i];
-                // Alleen alfanumerieke karakters splitsen en animeren
                 if (/[a-zA-Z0-9]/.test(char)) {
                     const morphSpan = document.createElement('span');
                     morphSpan.className = 'morph-char';
-                    if (shouldMask) {
-                        morphSpan.className += ' pending-mask';
-                    }
-                    
-                    const rawSpan = document.createElement('span');
-                    rawSpan.className = 'raw-char';
-                    rawSpan.textContent = char;
-                    
-                    const hashSpan = document.createElement('span');
-                    hashSpan.className = 'hash-char';
-                    hashSpan.textContent = '#';
-                    
-                    morphSpan.appendChild(rawSpan);
-                    morphSpan.appendChild(hashSpan);
+                    if (shouldMask) morphSpan.className += ' pending-mask';
+                    const rawSpan = document.createElement('span'); rawSpan.className = 'raw-char'; rawSpan.textContent = char;
+                    const hashSpan = document.createElement('span'); hashSpan.className = 'hash-char'; hashSpan.textContent = '#';
+                    morphSpan.appendChild(rawSpan); morphSpan.appendChild(hashSpan);
                     fragment.appendChild(morphSpan);
                 } else {
-                    // Leestekens direct ongemaskeerd als platte tekst toevoegen
                     fragment.appendChild(document.createTextNode(char));
                 }
             }
@@ -1053,12 +1198,7 @@
                 parts.forEach(part => {
                     if (part.length === 0) return;
                     const isWord = /\S/.test(part);
-                    allWordsTokens.push({
-                        text: part,
-                        isWord: isWord,
-                        lineIdx: lineIdx,
-                        author: line.author
-                    });
+                    allWordsTokens.push({ text: part, isWord: isWord, lineIdx: lineIdx, author: line.author });
                 });
             });
 
@@ -1078,7 +1218,6 @@
 
             let currentAuthor = null;
             let currentSpan = null;
-
             allWordsTokens.forEach((token, idx) => {
                 if (token.author !== currentAuthor) {
                     if (currentSpan) container.appendChild(currentSpan);
@@ -1086,37 +1225,65 @@
                     currentSpan = document.createElement('span');
                     currentSpan.className = `story-segment ${currentAuthor}`;
                 }
-
                 if (token.isWord) {
                     const wordNodes = createWordMorphNodes(token.text, token.shouldMask);
                     currentSpan.appendChild(wordNodes);
                 } else {
                     currentSpan.appendChild(document.createTextNode(token.text));
                 }
-                
                 if (idx !== allWordsTokens.length - 1) {
-                    if (allWordsTokens[idx+1].lineIdx !== token.lineIdx && !token.text.endsWith(" ")) {
+                    if (allWordsTokens[idx + 1].lineIdx !== token.lineIdx && !token.text.endsWith(" ")) {
                         currentSpan.appendChild(document.createTextNode(" "));
                     }
                 }
             });
-
             if (currentSpan) container.appendChild(currentSpan);
             return container;
         }
 
         // === 7. SPEL ENGINE ===
-        const gameModal = document.getElementById('gameModal'); const openGameBtn = document.getElementById('openGameBtn'); const closeGameBtn = document.getElementById('closeGameBtn');
-        const storyDisplayBox = document.getElementById('storyDisplayBox'); const storyTurnsCountdown = document.getElementById('storyTurnsCountdown');
-        const gameTurnBanner = document.getElementById('gameTurnBanner'); const gameInputSection = document.getElementById('gameInputSection');
-        const gameWaitSection = document.getElementById('gameWaitSection'); const gameTextInput = document.getElementById('gameTextInput');
-        const submitTurnBtn = document.getElementById('submitTurnBtn'); const wordCountDisplay = document.getElementById('wordCountDisplay');
-        const wordCounterWrapper = document.getElementById('wordCounterWrapper'); const gameAdminSection = document.getElementById('gameAdminSection');
+        const gameModal = document.getElementById('gameModal');
+        const openGameBtn = document.getElementById('openGameBtn');
+        const closeGameBtn = document.getElementById('closeGameBtn');
+        const closeGameBtnTop = document.getElementById('closeGameBtnTop');
+        const storyDisplayBox = document.getElementById('storyDisplayBox');
+        const storyTurnsCountdown = document.getElementById('storyTurnsCountdown');
+        const gameTurnBanner = document.getElementById('gameTurnBanner');
+        const gameInputSection = document.getElementById('gameInputSection');
+        const gameWaitSection = document.getElementById('gameWaitSection');
+        const gameTextInput = document.getElementById('gameTextInput');
+        const submitTurnBtn = document.getElementById('submitTurnBtn');
+        const wordCountDisplay = document.getElementById('wordCountDisplay');
+        const wordCounterWrapper = document.getElementById('wordCounterWrapper');
+        const gameAdminSection = document.getElementById('gameAdminSection');
         const gameAdminToggleBtn = document.getElementById('gameAdminToggleBtn');
+        const desktopTitleRow = document.getElementById('desktopTitleRow');
 
-        openGameBtn.addEventListener('click', () => { gameModal.classList.add('open'); if (gameStatus === 'active' && gameCurrentTurn === currentUser) triggerHapticFeedback(); });
-        closeGameBtn.addEventListener('click', () => { gameModal.classList.remove('open'); gameAdminSection.style.display = 'none'; });
-        gameAdminToggleBtn.addEventListener('click', () => { gameAdminSection.style.display = gameAdminSection.style.display === 'none' ? 'block' : 'none'; });
+        // Op desktop de titel-rij tonen, op mobiel de top-bar
+        function adjustModalLayout() {
+            if (window.innerWidth >= 480) {
+                desktopTitleRow.style.display = 'flex';
+            } else {
+                desktopTitleRow.style.display = 'none';
+            }
+        }
+        adjustModalLayout();
+        window.addEventListener('resize', adjustModalLayout);
+
+        openGameBtn.addEventListener('click', () => {
+            gameModal.classList.add('open');
+            if (gameStatus === 'active' && gameCurrentTurn === currentUser) triggerHapticFeedback();
+        });
+
+        function closeGame() {
+            gameModal.classList.remove('open');
+            gameAdminSection.style.display = 'none';
+        }
+        closeGameBtn.addEventListener('click', closeGame);
+        closeGameBtnTop.addEventListener('click', closeGame);
+        gameAdminToggleBtn.addEventListener('click', () => {
+            gameAdminSection.style.display = gameAdminSection.style.display === 'none' ? 'block' : 'none';
+        });
 
         function triggerHapticFeedback() { if (navigator.vibrate) navigator.vibrate(100); }
 
@@ -1124,8 +1291,7 @@
             if (shouldVibrate && gameModal.classList.contains('open')) triggerHapticFeedback();
 
             const currentRoundNumber = Math.floor(gameStoryLines.length / 2) + 1;
-            
-            // Reset en update de sfeer-klasse van het boekvlak
+
             storyDisplayBox.classList.remove('turn-maggie', 'turn-kaman', 'turn-finished');
 
             if (gameStatus === 'finished') {
@@ -1136,15 +1302,15 @@
             } else {
                 storyTurnsCountdown.innerText = `Ronde ${Math.min(currentRoundNumber, gameMaxRounds)} / ${gameMaxRounds}`;
                 storyDisplayBox.classList.add(`turn-${gameCurrentTurn}`);
-                
+
                 if (currentUser === 'viewer') {
-                    gameTurnBanner.className = "game-turn-banner waiting-turn"; 
+                    gameTurnBanner.className = "game-turn-banner waiting-turn";
                     gameTurnBanner.innerHTML = `👀 Modus bekijken. ${gameCurrentTurn === 'maggie' ? 'Maggie' : 'Kaman'} schrijft nu.`;
                 } else if (currentUser === gameCurrentTurn) {
-                    gameTurnBanner.className = "game-turn-banner your-turn"; 
+                    gameTurnBanner.className = "game-turn-banner your-turn";
                     gameTurnBanner.innerHTML = "✍️ Jij bent aan de beurt! Voeg woorden toe.";
                 } else {
-                    gameTurnBanner.className = "game-turn-banner waiting-turn"; 
+                    gameTurnBanner.className = "game-turn-banner waiting-turn";
                     gameTurnBanner.innerHTML = `⏳ ${gameCurrentTurn === 'maggie' ? 'Maggie' : 'Kaman'} is aan de beurt...`;
                 }
             }
@@ -1153,7 +1319,7 @@
                 storyDisplayBox.innerHTML = "<em style='opacity: 0.5; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:0.95rem;'>Er is nog geen verhaal gestart. Schrijf de eerste woorden!</em>";
             } else {
                 storyDisplayBox.innerHTML = "";
-                
+
                 let limit = -1;
                 if (gameVisibility !== 'all' && gameVisibility !== '-1') {
                     if (gameVisibility.startsWith('words_')) {
@@ -1166,62 +1332,75 @@
                 const paragraphNode = renderMaskedStory(gameStoryLines, limit, gameStatus === 'finished');
                 storyDisplayBox.appendChild(paragraphNode);
             }
-            
-            // TRIGGER DE TRANSITIE MET TIMEOUT VOOR DE LETTERS NAAR HASHTAGS
+
             setTimeout(() => {
                 document.querySelectorAll('.morph-char.pending-mask').forEach(el => {
                     el.classList.remove('pending-mask');
                     el.classList.add('is-masked');
                 });
             }, 50);
-            
-            // Soepele automatische scroll naar beneden bij updates
+
             setTimeout(() => {
-                storyDisplayBox.scrollTo({
-                    top: storyDisplayBox.scrollHeight,
-                    behavior: 'smooth'
-                });
+                storyDisplayBox.scrollTo({ top: storyDisplayBox.scrollHeight, behavior: 'smooth' });
             }, 100);
 
             if (gameStatus === 'finished') {
-                gameInputSection.style.display = 'none'; gameWaitSection.style.display = 'block';
-                gameWaitSection.innerHTML = "🩷 Dit verhaal is helemaal af. Veel plezier! 🩷.";
+                gameInputSection.style.display = 'none';
+                gameWaitSection.style.display = 'block';
+                gameWaitSection.innerHTML = "🩷 Dit verhaal is helemaal af. Veel plezier! 🩷";
             } else if (currentUser === 'viewer') {
-                gameInputSection.style.display = 'none'; gameWaitSection.style.display = 'block';
+                gameInputSection.style.display = 'none';
+                gameWaitSection.style.display = 'block';
                 gameWaitSection.innerText = "Open de app met je eigen link om mee te schrijven! ❤️";
             } else if (currentUser === gameCurrentTurn) {
-                gameInputSection.style.display = 'block'; gameWaitSection.style.display = 'none';
-                wordCountDisplay.innerText = `0 / ${gameWordLimit} woorden`; validateWords();
+                gameInputSection.style.display = 'block';
+                gameWaitSection.style.display = 'none';
+                wordCountDisplay.innerText = `0 / ${gameWordLimit} woorden`;
+                validateWords();
             } else {
-                gameInputSection.style.display = 'none'; gameWaitSection.style.display = 'block';
+                gameInputSection.style.display = 'none';
+                gameWaitSection.style.display = 'block';
                 gameWaitSection.innerText = `${gameCurrentTurn === 'maggie' ? 'Maggie' : 'Kaman'} is nu aan de beurt... ✍️`;
             }
         }
 
         // === 8. LIVE WOORDENTELLER VALIDATIE ===
+        // FIX: minimumcheck toegevoegd — leestekens-alleen tellen niet als geldig woord
         function getWordCount(text) {
-            const cleanText = text.trim(); return cleanText === "" ? 0 : cleanText.split(/\s+/).length;
+            const cleanText = text.trim();
+            if (cleanText === "") return 0;
+            // Telt alleen woorden met minstens één alfanumeriek karakter
+            return cleanText.split(/\s+/).filter(w => /[a-zA-Z0-9]/.test(w)).length;
         }
+
         function validateWords() {
             const count = getWordCount(gameTextInput.value);
             wordCountDisplay.innerText = `${count} / ${gameWordLimit} woorden`;
-            if (count > gameWordLimit) {
-                wordCounterWrapper.classList.add('over-limit'); submitTurnBtn.disabled = true; submitTurnBtn.style.opacity = "0.4"; submitTurnBtn.style.cursor = "not-allowed";
+            const isOverLimit = count > gameWordLimit;
+            // FIX: ook blokkeren als count === 0 (leeg of alleen leestekens)
+            const isInvalid = isOverLimit || count < 1;
+            if (isOverLimit) {
+                wordCounterWrapper.classList.add('over-limit');
             } else {
-                wordCounterWrapper.classList.remove('over-limit'); submitTurnBtn.disabled = false; submitTurnBtn.style.opacity = "1"; submitTurnBtn.style.cursor = "pointer";
+                wordCounterWrapper.classList.remove('over-limit');
             }
+            submitTurnBtn.disabled = isInvalid;
+            submitTurnBtn.style.opacity = isInvalid ? "0.4" : "1";
+            submitTurnBtn.style.cursor = isInvalid ? "not-allowed" : "pointer";
         }
         gameTextInput.addEventListener('input', validateWords);
 
         submitTurnBtn.addEventListener('click', async () => {
-            const text = gameTextInput.value.trim(); if (text === "" || getWordCount(text) > gameWordLimit) return;
+            const text = gameTextInput.value.trim();
+            // FIX: controleer op echte woorden, niet alleen lege string
+            if (text === "" || getWordCount(text) < 1 || getWordCount(text) > gameWordLimit) return;
+
             const updatedLines = [...gameStoryLines, { author: currentUser, text: text }];
-            
             const nextTurn = currentUser === 'maggie' ? 'kaman' : 'maggie';
+
+            // FIX: rondecheck werkt nu correct ongeacht wie de laatste beurt doet
             let nextStatus = 'active';
-            const completedRounds = Math.floor(updatedLines.length / 2);
-            
-            if (completedRounds >= gameMaxRounds && currentUser === 'kaman') {
+            if (updatedLines.length >= gameMaxRounds * 2) {
                 nextStatus = 'finished';
             }
 
@@ -1229,43 +1408,59 @@
                 .from('countdown_settings')
                 .update({ game_story_lines: updatedLines, game_current_turn: nextTurn, game_status: nextStatus })
                 .eq('id', 1);
-            if (!error) gameTextInput.value = ""; else alert("Verzenden mislukt: " + error.message);
+
+            if (!error) {
+                gameTextInput.value = "";
+                // FIX: confetti bij voltooiing van het verhaal
+                if (nextStatus === 'finished') {
+                    setTimeout(() => triggerConfetti(), 300);
+                }
+            } else {
+                alert("Verzenden mislukt: " + error.message);
+            }
         });
 
-        // === 9. HOOFD ADMIN DETECTIE & OPSLAG ===
+        // === 9. HOOFD ADMIN OPSLAG ===
         document.getElementById('saveMainAdminBtn').addEventListener('click', async () => {
-            const startVal = document.getElementById('inputStart').value; const endVal = document.getElementById('inputEnd').value;
-            const qHerVal = document.getElementById('inputQuotesHer').value; const qHimVal = document.getElementById('inputQuotesHim').value;
-            const selectedDayIso = document.getElementById('selectNoteDay').value; const noteText = document.getElementById('inputDayNote').value;
-            if(selectedDayIso) { if(noteText.trim() === "") delete dailyNotes[selectedDayIso]; else dailyNotes[selectedDayIso] = noteText; }
-
+            const startVal = document.getElementById('inputStart').value;
+            const endVal = document.getElementById('inputEnd').value;
+            const qHerVal = document.getElementById('inputQuotesHer').value;
+            const qHimVal = document.getElementById('inputQuotesHim').value;
+            const selectedDayIso = document.getElementById('selectNoteDay').value;
+            const noteText = document.getElementById('inputDayNote').value;
+            if (selectedDayIso) {
+                if (noteText.trim() === "") delete dailyNotes[selectedDayIso];
+                else dailyNotes[selectedDayIso] = noteText;
+            }
             const { error } = await supabaseClient
                 .from('countdown_settings')
                 .update({ start_date: startVal, end_date: endVal, quotes_her: qHerVal, quotes_him: qHimVal, daily_notes: dailyNotes })
                 .eq('id', 1);
-            if (!error) { document.getElementById('mainAdminModal').classList.remove('open'); document.getElementById('selectNoteDay').value = ""; document.getElementById('inputDayNote').value = ""; } else alert("Opslaan mislukt: " + error.message);
+            if (!error) {
+                document.getElementById('mainAdminModal').classList.remove('open');
+                document.getElementById('selectNoteDay').value = "";
+                document.getElementById('inputDayNote').value = "";
+            } else {
+                alert("Opslaan mislukt: " + error.message);
+            }
         });
 
         // === 10. GAME ADMIN OPSLAAN ===
         document.getElementById('saveGameAdminBtn').addEventListener('click', async () => {
             const wLimit = parseInt(document.getElementById('inputWordLimit').value) || 10;
-            const mRounds = parseInt(document.getElementById('inputMaxTurns').value) || 10; 
+            const mRounds = parseInt(document.getElementById('inputMaxTurns').value) || 10;
             const visWords = document.getElementById('inputVisibilityWords').value.trim();
-
             const { error } = await supabaseClient
                 .from('countdown_settings')
                 .update({ game_word_limit: wLimit, game_max_turns: mRounds, game_visibility: visWords })
                 .eq('id', 1);
-
-            if (!error) gameAdminSection.style.display = 'none'; else alert("Fout bij opslaan regels: " + error.message);
+            if (!error) gameAdminSection.style.display = 'none';
+            else alert("Fout bij opslaan regels: " + error.message);
         });
 
-        // RANDOM START BIJ RESET
         document.getElementById('btnResetGame').addEventListener('click', async () => {
             if (!confirm("Weet je zeker dat je het huidige verhaal wilt wissen? Alle data gaat verloren.")) return;
-            
             const randomStartUser = Math.random() < 0.5 ? 'maggie' : 'kaman';
-            
             const { error } = await supabaseClient
                 .from('countdown_settings')
                 .update({ game_story_lines: [], game_current_turn: randomStartUser, game_status: "active" })
@@ -1273,7 +1468,8 @@
             if (!error) gameAdminSection.style.display = 'none';
         });
 
-        loadSharedDates(); setInterval(updateCountdown, 1000);
+        loadSharedDates();
+        setInterval(updateCountdown, 1000);
     </script>
 </body>
 </html>
