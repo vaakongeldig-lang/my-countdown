@@ -275,13 +275,42 @@
             color: var(--text-muted); font-weight: 700; text-align: center;
         }
 
-        /* TEXT BOX */
+        /* ELEGANT BOEK-ONTWERP VOOR HET VERHAAL */
         .story-display-box {
-            background: var(--bg-color); padding: 1.5rem; border-radius: 18px;
-            min-height: 240px; max-height: 380px; overflow-y: auto;
-            font-size: 1.05rem; line-height: 1.6; color: var(--text-main);
-            border: 1px solid rgba(0,0,0,0.03);
+            background: var(--bg-color);
+            padding: 2rem;
+            border-radius: 24px;
+            min-height: 280px;
+            max-height: 400px;
+            overflow-y: auto;
+            /* Klassieke Serif/Boek typografie */
+            font-family: "Georgia", "Merriweather", "Baskerville", serif;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: var(--text-main);
+            border: 1px solid rgba(0, 0, 0, 0.03);
             text-align: left;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.02);
+            transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        /* Dynamische sfeergloed op basis van de actieve beurt */
+        .story-display-box.turn-maggie {
+            background-color: rgba(219, 125, 117, 0.04);
+            border-color: rgba(219, 125, 117, 0.15);
+            box-shadow: inset 0 2px 8px rgba(219, 125, 117, 0.02), 0 0 15px rgba(219, 125, 117, 0.05);
+        }
+
+        .story-display-box.turn-kaman {
+            background-color: rgba(74, 124, 133, 0.04);
+            border-color: rgba(74, 124, 133, 0.15);
+            box-shadow: inset 0 2px 8px rgba(74, 124, 133, 0.02), 0 0 15px rgba(74, 124, 133, 0.05);
+        }
+
+        .story-display-box.turn-finished {
+            background-color: rgba(212, 175, 55, 0.03);
+            border-color: rgba(212, 175, 55, 0.2);
+            box-shadow: inset 0 2px 8px rgba(212, 175, 55, 0.01), 0 0 20px rgba(212, 175, 55, 0.08);
         }
         
         .story-paragraph {
@@ -293,12 +322,27 @@
         .story-segment {
             display: inline;
             white-space: normal;
+            animation: fadeInSegment 0.6s ease-out forwards;
         }
         .story-segment.maggie {
             color: var(--color-maggie);
         }
         .story-segment.kaman {
             color: var(--color-kaman);
+        }
+
+        /* Extra stijlinstellingen om gemaskeerde tekens mysterieus en ruimtelijker te maken */
+        .story-masked-char {
+            letter-spacing: 0.15em;
+            opacity: 0.65;
+            font-weight: 600;
+            display: inline-block;
+            user-select: none;
+        }
+
+        @keyframes fadeInSegment {
+            from { opacity: 0; transform: translateY(2px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .word-counter-wrapper {
@@ -404,7 +448,7 @@
             <div class="game-turn-banner" id="gameTurnBanner">Laden... 🤔</div>
             <div class="story-turns-countdown" id="storyTurnsCountdown">Ronde -- / --</div>
 
-            <!-- HET VERHAAL DISPLAY VAK (DOORLOPEND) -->
+            <!-- HET VERHAAL DISPLAY VAK (DOORLOPEND, MET NIEUWE CLASSES) -->
             <div class="story-display-box" id="storyDisplayBox">Laden...</div>
 
             <div id="gameInputSection" style="display: none;">
@@ -416,7 +460,7 @@
                         <span id="wordValidationMsg"></span>
                     </div>
                 </div>
-                <button class="btn-action btn-save" id="submitTurnBtn">Verstuur jouw woorden</button>
+                <button class="btn-action btn-save" id="submitTurnBtn">Verstuur beurt 🚀</button>
             </div>
             
             <div id="gameWaitSection" style="text-align: center; color: var(--text-muted); padding: 1rem; display: none;"></div>
@@ -556,7 +600,7 @@
         });
 
         // === BEURT INDICATOR VOOR HOOFDSCHERM BADGE ===
-function updateMainBadgeIndicator() {
+        function updateMainBadgeIndicator() {
             const badge = document.getElementById('openGameBtn');
             if (!badge) return;
             
@@ -571,7 +615,7 @@ function updateMainBadgeIndicator() {
                 badge.innerText = "📖 Mijn beurt";
                 badge.classList.add('my-turn');
             } else {
-                badge.innerText = "📖 Jouw liefje's beurt";
+                badge.innerText = "📖 Je liefje's beurt";
                 badge.classList.add('their-turn');
             }
         }
@@ -610,7 +654,7 @@ function updateMainBadgeIndicator() {
             showAlternativeStats = !showAlternativeStats; clearTimeout(statsResetTimer);
             if (showAlternativeStats) {
                 const now = new Date(); const totalTime = new Date(endDateStr).getTime() - new Date(startDateStr).getTime();
-                const timeRemaining = new Date(endDateStr).getTime() - now.getTime(); const timePassed = totalTotal = totalTime - timeRemaining;
+                const timeRemaining = new Date(endDateStr).getTime() - now.getTime(); const timePassed = totalTime - timeRemaining;
                 if (timeRemaining > 0) {
                     const totalSeconds = Math.floor(timeRemaining / 1000); const totalMinutes = Math.floor(timeRemaining / (1000 * 60));
                     const totalNights = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24)); const percentagePassed = Math.min(100, Math.max(0, (timePassed / totalTime) * 100)).toFixed(1);
@@ -698,16 +742,16 @@ function updateMainBadgeIndicator() {
             document.getElementById('totalHours').innerText = Math.floor(timeRemaining / (1000 * 60 * 60));
         }
 
-        // === MASKERINGS LOGICA MET BEHOUD VAN SPATIES & LEESTEKENS ===
+        // === MASKERINGS LOGICA MET TEXT-OVERGANGEN & CHAR SPACING ===
         function maskStringKeepingPunctuation(str) {
-            return str.replace(/[a-zA-Z0-9]/g, '#');
+            // Vervang elk alfanumeriek teken door een gestylede '#' span
+            return str.replace(/[a-zA-Z0-9]/g, '<span class="story-masked-char">#</span>');
         }
 
         function renderMaskedStory(storyLines, visibilityLimit, isGameFinished) {
             const container = document.createElement('p');
             container.className = "story-paragraph";
 
-            // Als alles zichtbaar is of de game is afgelopen, tonen we het volledige verhaal zonder maskers
             if (visibilityLimit === -1 || isGameFinished) {
                 storyLines.forEach((line, idx) => {
                     const span = document.createElement('span');
@@ -718,15 +762,12 @@ function updateMainBadgeIndicator() {
                 return container;
             }
 
-            // We verzamelen alle woorden over het gehele verhaal om de limiet toe te passen
-            // Elk woord onthoudt uit welke regel (index) hij komt
             let allWordsTokens = [];
             storyLines.forEach((line, lineIdx) => {
-                // We splitten op spaties maar behouden spatie-informatie via tokens
                 const parts = line.text.split(/(\s+)/);
                 parts.forEach(part => {
                     if (part.length === 0) return;
-                    const isWord = /\S/.test(part); // Geen pure whitespace
+                    const isWord = /\S/.test(part);
                     allWordsTokens.push({
                         text: part,
                         isWord: isWord,
@@ -736,31 +777,20 @@ function updateMainBadgeIndicator() {
                 });
             });
 
-            // Tel hoeveel daadwerkelijke woorden er in de allerlaatste regel zitten
             const lastLineIdx = storyLines.length - 1;
             let totalWordsInLastLine = allWordsTokens.filter(t => t.lineIdx === lastLineIdx && t.isWord).length;
-            
-            // Bepaal hoeveel woorden er exact getoond mogen worden vanaf het einde van de LAATSTE regel
-            // Het mag nooit meer zijn dan de limiet én nooit meer dan het aantal woorden dat de laatste speler typte
             const allowedVisibleWords = Math.min(visibilityLimit, totalWordsInLastLine);
 
-            // Bepaal vanaf welk echt woord (binnen de laatste regel) we mogen stoppen met maskeren
             let wordCounter = 0;
             for (let i = allWordsTokens.length - 1; i >= 0; i--) {
                 if (allWordsTokens[i].lineIdx === lastLineIdx && allWordsTokens[i].isWord) {
                     wordCounter++;
-                    if (wordCounter <= allowedVisibleWords) {
-                        allWordsTokens[i].shouldMask = false;
-                    } else {
-                        allWordsTokens[i].shouldMask = true;
-                    }
+                    allWordsTokens[i].shouldMask = (wordCounter > allowedVisibleWords);
                 } else {
-                    // Alle oudere regels of eerdere beurten worden sowieso gemaskeerd
                     allWordsTokens[i].shouldMask = allWordsTokens[i].isWord;
                 }
             }
 
-            // Bouw nu de HTML elementen op per opeenvolgende speler
             let currentAuthor = null;
             let currentSpan = null;
 
@@ -773,16 +803,20 @@ function updateMainBadgeIndicator() {
                 }
 
                 if (token.isWord && token.shouldMask) {
-                    currentSpan.innerText += maskStringKeepingPunctuation(token.text);
+                    const maskedHtml = maskStringKeepingPunctuation(token.text);
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = maskedHtml;
+                    while (tempDiv.firstChild) {
+                        currentSpan.appendChild(tempDiv.firstChild);
+                    }
                 } else {
-                    currentSpan.innerText += token.text;
+                    currentSpan.appendChild(document.createTextNode(token.text));
                 }
                 
-                // Voeg een spatie toe tussen beurten als dat nodig is
-                if (idx === allWordsTokens.length - 1) {
-                    // einde verhaal
-                } else if (allWordsTokens[idx+1].lineIdx !== token.lineIdx && !token.text.endsWith(" ")) {
-                    currentSpan.innerText += " ";
+                if (idx !== allWordsTokens.length - 1) {
+                    if (allWordsTokens[idx+1].lineIdx !== token.lineIdx && !token.text.endsWith(" ")) {
+                        currentSpan.appendChild(document.createTextNode(" "));
+                    }
                 }
             });
 
@@ -809,24 +843,33 @@ function updateMainBadgeIndicator() {
             if (shouldVibrate && gameModal.classList.contains('open')) triggerHapticFeedback();
 
             const currentRoundNumber = Math.floor(gameStoryLines.length / 2) + 1;
+            
+            // Reset en update de sfeer-klasse van het boekvlak
+            storyDisplayBox.classList.remove('turn-maggie', 'turn-kaman', 'turn-finished');
 
             if (gameStatus === 'finished') {
                 storyTurnsCountdown.innerText = "📕 HET VERHAAL IS COMPLEET!";
                 gameTurnBanner.className = "game-turn-banner";
                 gameTurnBanner.innerHTML = `🎉 Voltooid! Alle ${gameMaxRounds} rondes zijn afgerond.`;
+                storyDisplayBox.classList.add('turn-finished');
             } else {
                 storyTurnsCountdown.innerText = `Ronde ${Math.min(currentRoundNumber, gameMaxRounds)} / ${gameMaxRounds}`;
+                storyDisplayBox.classList.add(`turn-${gameCurrentTurn}`);
+                
                 if (currentUser === 'viewer') {
-                    gameTurnBanner.className = "game-turn-banner waiting-turn"; gameTurnBanner.innerHTML = `👀 Modus bekijken. ${gameCurrentTurn === 'maggie' ? 'Maggie' : 'Kaman'} schrijft nu.`;
+                    gameTurnBanner.className = "game-turn-banner waiting-turn"; 
+                    gameTurnBanner.innerHTML = `👀 Modus bekijken. ${gameCurrentTurn === 'maggie' ? 'Maggie' : 'Kaman'} schrijft nu.`;
                 } else if (currentUser === gameCurrentTurn) {
-                    gameTurnBanner.className = "game-turn-banner your-turn"; gameTurnBanner.innerHTML = "🖊️ Jij bent aan de beurt! Voeg je woorden toe.";
+                    gameTurnBanner.className = "game-turn-banner your-turn"; 
+                    gameTurnBanner.innerHTML = "✍️ Jij bent aan de beurt! Voeg jouw woorden toe.";
                 } else {
-                    gameTurnBanner.className = "game-turn-banner waiting-turn"; gameTurnBanner.innerHTML = `⏳ ${gameCurrentTurn === 'maggie' ? 'Maggie' : 'Kaman'} is aan de beurt...`;
+                    gameTurnBanner.className = "game-turn-banner waiting-turn"; 
+                    gameTurnBanner.innerHTML = `⏳ ${gameCurrentTurn === 'maggie' ? 'Maggie' : 'Kaman'} is aan de beurt...`;
                 }
             }
 
             if (gameStoryLines.length === 0) {
-                storyDisplayBox.innerHTML = "<em>Er is nog geen verhaal gestart. Schrijf de eerste regel!</em>";
+                storyDisplayBox.innerHTML = "<em style='opacity: 0.5; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:0.95rem;'>Er is nog geen verhaal gestart. Schrijf de eerste woorden!</em>";
             } else {
                 storyDisplayBox.innerHTML = "";
                 
@@ -839,11 +882,17 @@ function updateMainBadgeIndicator() {
                     }
                 }
 
-                // Genereer de volledig doorlopende (gemaskeerde) tekst
                 const paragraphNode = renderMaskedStory(gameStoryLines, limit, gameStatus === 'finished');
                 storyDisplayBox.appendChild(paragraphNode);
             }
-            storyDisplayBox.scrollTop = storyDisplayBox.scrollHeight;
+            
+            // Soepele automatische scroll naar beneden bij updates
+            setTimeout(() => {
+                storyDisplayBox.scrollTo({
+                    top: storyDisplayBox.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 50);
 
             if (gameStatus === 'finished') {
                 gameInputSection.style.display = 'none'; gameWaitSection.style.display = 'block';
@@ -922,11 +971,15 @@ function updateMainBadgeIndicator() {
             if (!error) gameAdminSection.style.display = 'none'; else alert("Fout bij opslaan regels: " + error.message);
         });
 
+        // RANDOM START BIJ RESET
         document.getElementById('btnResetGame').addEventListener('click', async () => {
             if (!confirm("Weet je zeker dat je het huidige verhaal wilt wissen? Alle data gaat verloren.")) return;
+            
+            const randomStartUser = Math.random() < 0.5 ? 'maggie' : 'kaman';
+            
             const { error } = await supabaseClient
                 .from('countdown_settings')
-                .update({ game_story_lines: [], game_current_turn: "maggie", game_status: "active" })
+                .update({ game_story_lines: [], game_current_turn: randomStartUser, game_status: "active" })
                 .eq('id', 1);
             if (!error) gameAdminSection.style.display = 'none';
         });
