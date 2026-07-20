@@ -563,7 +563,7 @@ function updateMainBadgeIndicator() {
             badge.classList.remove('my-turn', 'their-turn', 'completed-turn');
             
             if (gameStatus === 'finished') {
-                badge.innerText = "📖 Ons Verhaal";
+                badge.innerText = "📕 Verhaal voltooid";
                 badge.classList.add('completed-turn');
             } else if (currentUser === 'viewer' || gameStoryLines.length === 0) {
                 badge.innerText = "📖 Ons Verhaal";
