@@ -314,22 +314,37 @@
         @media (min-width: 480px) {
             .dots-grid { gap: 14px 12px; margin-bottom: 1.5rem; }
         }
-        .dot-wrapper { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .dot-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            /* Ruimte voor de ring zodat buren niet verspringen */
+            padding: 3px;
+        }
+
         .day-dot {
             width: 22px;
             height: 22px;
             border-radius: 50%;
             background-color: var(--dot-empty);
             border: 2px solid transparent;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
             user-select: none;
+            /* position:relative nodig voor de witte kern (notitie-indicator) */
+            position: relative;
         }
         @media (min-width: 480px) {
             .day-dot { width: 26px; height: 26px; }
         }
+
         .day-dot:hover { transform: scale(1.2); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .day-dot.passed { background-color: var(--accent-gold); box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3); }
+
+        .day-dot.passed {
+            background-color: var(--accent-gold);
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+        }
         .day-dot.today {
             background-color: var(--accent-soft);
             animation: dot-sparkle 2s infinite ease-in-out;
@@ -340,9 +355,64 @@
             0%, 100% { box-shadow: 0 0 12px var(--accent-soft); }
             50% { box-shadow: 0 0 20px var(--accent-soft), 0 0 30px rgba(232, 167, 161, 0.3); }
         }
-        .dot-number { font-size: 0.6rem; font-weight: 600; color: var(--text-muted); }
+
+        /* === GESELECTEERD BOLLETJE: subtiele schaal, geen ring === */
+        .day-dot.selected {
+            transform: scale(1.15);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+        }
+        /* Vandaag geselecteerd: sparkle uit voor stabiliteit */
+        .day-dot.today.selected {
+            animation: none;
+            box-shadow: 0 3px 12px rgba(232, 167, 161, 0.35);
+        }
+        /* Lege dag geselecteerd: neutrale schaduw */
+        .day-dot:not(.passed):not(.today).selected {
+            box-shadow: 0 3px 10px rgba(144, 149, 167, 0.18);
+        }
+
+        /* === NOTITIE-INDICATOR: wit stipje in het midden van het bolletje === */
+        .day-dot.has-note::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.85);
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        @media (min-width: 480px) {
+            .day-dot.has-note::after { width: 7px; height: 7px; }
+        }
+        /* Op een lege (grijze) dot: kern in een zachtere tint zodat hij zichtbaar blijft */
+        .day-dot:not(.passed):not(.today).has-note::after {
+            background: rgba(144, 149, 167, 0.55);
+        }
+        /* FIX: Lichtgouden kern in gouden ballen */
+        .day-dot.passed.has-note::after,
+        .day-dot.today.has-note::after {
+            background: rgba(235, 205, 120, 0.9);
+        }
+
+        /* === DAGNUMMER LABEL === */
+        .dot-number {
+            font-size: 0.6rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: color 0.25s, font-weight 0.25s;
+            line-height: 1;
+        }
         @media (min-width: 480px) {
             .dot-number { font-size: 0.65rem; }
+        }
+        /* Geselecteerd: getal oplichten */
+        .dot-wrapper.selected-wrapper .dot-number {
+            color: var(--text-main);
+            font-weight: 700;
         }
         .timeline-labels {
             display: flex;
@@ -958,6 +1028,7 @@
                 gameStatus = payload.new.game_status || "active";
 
                 setupDotsGrid(); populateDaySelector(); updateCountdown(); autoSelectToday();
+                refreshNoteIndicators();
                 const turnChangedToMe = (oldTurn !== gameCurrentTurn && gameCurrentTurn === currentUser);
                 updateGameUI(turnChangedToMe);
                 updateMainBadgeIndicator();
@@ -1056,6 +1127,8 @@
         });
 
         // === 6. TIJDSLIJN GRID ===
+        let selectedDotWrapper = null; // bijhouden welke wrapper momenteel geselecteerd is
+
         function setupDotsGrid() {
             const start = new Date(startDateStr); start.setHours(0, 0, 0, 0);
             const end = new Date(endDateStr); end.setHours(0, 0, 0, 0);
@@ -1063,21 +1136,53 @@
             const gridContainer = document.getElementById('dotsGrid');
             if (!gridContainer) return;
             gridContainer.innerHTML = '';
+            selectedDotWrapper = null;
+
             for (let i = 0; i < totalDays; i++) {
-                const wrapper = document.createElement('div'); wrapper.className = 'dot-wrapper';
-                const dot = document.createElement('div'); dot.className = 'day-dot';
-                const dotDate = new Date(start); dotDate.setDate(start.getDate() + i);
+                const wrapper = document.createElement('div');
+                wrapper.className = 'dot-wrapper';
+
+                const dot = document.createElement('div');
+                dot.className = 'day-dot';
+
+                const dotDate = new Date(start);
+                dotDate.setDate(start.getDate() + i);
                 const dateIsoStr = getLocalDateString(dotDate);
+
                 dot.setAttribute('data-date', dateIsoStr);
                 dot.setAttribute('data-readable', formatDateLabel(dotDate));
                 dot.setAttribute('data-index', i + 1);
+
+                // Notitie-indicator: witte kern als er een dagboeknotitie is
+                if (dailyNotes[dateIsoStr]) {
+                    dot.classList.add('has-note');
+                }
+
                 dot.addEventListener('click', () => {
+                    // Deselect vorige
+                    if (selectedDotWrapper) {
+                        selectedDotWrapper.querySelector('.day-dot').classList.remove('selected');
+                        selectedDotWrapper.classList.remove('selected-wrapper');
+                    }
+                    // Selecteer nieuwe
+                    dot.classList.add('selected');
+                    wrapper.classList.add('selected-wrapper');
+                    selectedDotWrapper = wrapper;
+
                     showMicroDiary(dateIsoStr, dot.getAttribute('data-readable'), i + 1);
                     if (dot.classList.contains('passed') || dot.classList.contains('today')) triggerConfetti();
                 });
-                const numLabel = document.createElement('span'); numLabel.className = 'dot-number'; numLabel.innerText = i + 1;
-                wrapper.appendChild(dot); wrapper.appendChild(numLabel); gridContainer.appendChild(wrapper);
+
+                // Dag van de maand als label (16, 17, 18 … 1, 2 …)
+                const numLabel = document.createElement('span');
+                numLabel.className = 'dot-number';
+                numLabel.innerText = dotDate.getDate();
+
+                wrapper.appendChild(dot);
+                wrapper.appendChild(numLabel);
+                gridContainer.appendChild(wrapper);
             }
+
             document.getElementById('labelStart').innerText = formatDateLabel(startDateStr);
             document.getElementById('labelEnd').innerText = formatDateLabel(endDateStr);
         }
@@ -1104,8 +1209,39 @@
         function autoSelectToday() {
             const todayStr = getLocalDateString();
             const todayDot = document.querySelector(`.day-dot[data-date="${todayStr}"]`);
-            if (todayDot) showMicroDiary(todayStr, todayDot.getAttribute('data-readable'), todayDot.getAttribute('data-index'));
-            else { const firstDot = document.querySelector('.day-dot'); if (firstDot) showMicroDiary(firstDot.getAttribute('data-date'), firstDot.getAttribute('data-readable'), 1); }
+            const target = todayDot || document.querySelector('.day-dot');
+            if (!target) return;
+
+            // Verwijder eventuele eerdere selectie
+            if (selectedDotWrapper) {
+                selectedDotWrapper.querySelector('.day-dot').classList.remove('selected');
+                selectedDotWrapper.classList.remove('selected-wrapper');
+            }
+
+            target.classList.add('selected');
+            const targetWrapper = target.closest('.dot-wrapper');
+            if (targetWrapper) {
+                targetWrapper.classList.add('selected-wrapper');
+                selectedDotWrapper = targetWrapper;
+            }
+
+            showMicroDiary(
+                target.getAttribute('data-date'),
+                target.getAttribute('data-readable'),
+                target.getAttribute('data-index')
+            );
+        }
+
+        // Herlaad has-note klassen na een data-update zonder volledige grid-rebuild
+        function refreshNoteIndicators() {
+            document.querySelectorAll('.day-dot').forEach(dot => {
+                const dateIso = dot.getAttribute('data-date');
+                if (dailyNotes[dateIso]) {
+                    dot.classList.add('has-note');
+                } else {
+                    dot.classList.remove('has-note');
+                }
+            });
         }
 
         function populateDaySelector() {
@@ -1440,6 +1576,7 @@
                 document.getElementById('mainAdminModal').classList.remove('open');
                 document.getElementById('selectNoteDay').value = "";
                 document.getElementById('inputDayNote').value = "";
+                refreshNoteIndicators();
             } else {
                 alert("Opslaan mislukt: " + error.message);
             }
